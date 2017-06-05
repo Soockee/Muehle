@@ -10,33 +10,50 @@ import java.util.Stack;
 /**********************************************/
 /*                                            */
 /*                                            */
+
 /**********************************************/
-public class Game implements Gameable{
+public class Game implements Gameable {
     private Hashtable<Integer, Integer> transTable;
-    /**********************************************
-    /* board: current Board and Root of the Tree                                            *
-    /**********************************************/
+     /***********************************************
+     * board: current Board and Root of the Tree  **
+     /**********************************************/
     private Board board;
     private Stack<Board> history;
-    public Game(){
+
+    public Game() {
         history = new Stack<>();
         board = new Board();
     }
 
-    public void makeMove(int turn, int move){
+     /********************************************************************************
+     * MakeMove:                                                                     *
+     * turn: Board which is modified                                                 *
+     * move: move which is made                                                      *
+     *                                                                               *
+     * Thoughts:                                                                     *
+     *      -Game could get a State which determinates the makeMove possibilities    *
+     /********************************************************************************/
+    public void makeMove(int turn, int move) {
         history.push(board);
-        board =  new Board(board,turn,move);
+        board = new Board(board, turn, move);
     }
-    public boolean isWin(int board){
+
+    /********************************************************************************
+     * isWin():                                                                      *
+     *       -ToDo:   -Twitter Herzberg isWin() method implementation                *
+     *                                                                               *
+     *                                                                               *
+     *                                                                               *
+     /********************************************************************************/
+    public boolean isWin(int board) {
         return true;
     }
-    public ArrayList<Integer> moves(int board){
-        return null;
-    }
-    public int undoMove(int board){
+
+    public int undoMove(int board) {
         return 0;
     }
-    public String toString(){
+
+    public String toString() {
         return null;
     }
 
