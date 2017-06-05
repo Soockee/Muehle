@@ -2,24 +2,33 @@ package UnfinishedVersions.V0_1;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Stack;
 
 /**
  * Created by Simon on 28.05.2017.
  */
+/**********************************************/
+/*                                            */
+/*                                            */
+/**********************************************/
 public class Game implements Gameable{
-    Hashtable<Integer, Integer> transTable;
-    Board[] boards;
+    private Hashtable<Integer, Integer> transTable;
+    /**********************************************
+    /* board: current Board and Root of the Tree                                            *
+    /**********************************************/
+    private Board board;
+    private Stack<Board> history;
     public Game(){
-        boards = new Board[2];
-        boards[0] = new Board();
-        boards[1] = new Board();
+        history = new Stack<>();
+        board = new Board();
     }
 
-    public int makeMove(int move, int board){
-        return 0;
+    public void makeMove(int turn, int move){
+        history.push(board);
+        board =  new Board(board,turn,move);
     }
     public boolean isWin(int board){
-        return false;
+        return true;
     }
     public ArrayList<Integer> moves(int board){
         return null;
@@ -29,5 +38,9 @@ public class Game implements Gameable{
     }
     public String toString(){
         return null;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 }
