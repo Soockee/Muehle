@@ -26,6 +26,7 @@ public class Board implements MutableBoard<Integer> {
                 - Die Variable turn ermöglicht es den Spieler zu ermitteln der grade am zug ist
                 - In der List history werden alle vergangen Züge gespeichert
                 - Die Variable flipped speichert, ob der Benutzer die Spielsteine vertauschen möchte
+                - new Comment
          */
         players = new int[]{0b0, 0b0};
         stones = new int[]{9, 9};
