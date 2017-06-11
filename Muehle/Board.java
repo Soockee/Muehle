@@ -69,7 +69,7 @@ public class Board implements MutableBoard<Integer> {
     @Override
     public boolean isDraw() {
         int p1 = IntStream.range(0, 24).filter(i -> (players[(turn & 1)] & (1 << i)) > 0).toArray().length;
-        int p2 = IntStream.range(0, 24).filter(i -> (players[(turn & 1)] & (1 << i)) > 0).toArray().length;
+        int p2 = IntStream.range(0, 24).filter(i -> (players[((turn+1) & 1)] & (1 << i)) > 0).toArray().length;
         return ((p1==3)&&(p2==3));
     }
 
@@ -90,7 +90,7 @@ public class Board implements MutableBoard<Integer> {
     @Override
     public boolean isFlipped() {
         return flipped;
-    }
+    7}//isFlippped
 
     @Override
     public void load(String name) {
