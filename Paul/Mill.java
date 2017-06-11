@@ -280,7 +280,7 @@ public class Mill implements Board {
                 .filter(i -> board[i] == 0)
                 .filter(i -> mill.board[i] == turn)
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("no Move possible"))
+                .orElseThrow(() -> new IllegalArgumentException("no MorrisMove possible"))
         );
         res.setRemove(IntStream.range(0, 24)
                 .filter(i -> board[i] == -turn)
@@ -289,7 +289,7 @@ public class Mill implements Board {
                 .orElse(-1)
         );
         //if (!(isValidMove(res) && makeMove(res).equals(mill)))
-        //throw new IllegalArgumentException("no valid Move exists");
+        //throw new IllegalArgumentException("no valid MorrisMove exists");
         return res;
     }
 

@@ -246,7 +246,7 @@ public class Millc implements Board {
                 .orElse(-1)
         );
         if (!(isValidMove(res) && makeMove(res).equals(mill)))
-            throw new IllegalArgumentException("no valid Move exists");
+            throw new IllegalArgumentException("no valid MorrisMove exists");
         return res;
     }
 
