@@ -15,7 +15,7 @@ public class Board implements MutableBoard<Integer> {
     private int turn;
     private List<Integer> history;
     private boolean flipped;
-    private int [][] hashCodes;
+    private int[][] hashCodes;
 
 
     public Board() {
@@ -60,7 +60,7 @@ public class Board implements MutableBoard<Integer> {
     public boolean isWin() {
         if (stones[turn & 1] == 0) {
             int winSum = IntStream.range(0, 24).filter(i -> (players[(turn & 1)] & (1 << i)) > 0).toArray().length;
-            return (winSum<3) ? true : false;
+            return (winSum < 3) ? true : false;
         }//if
         return false;
     }
@@ -73,20 +73,21 @@ public class Board implements MutableBoard<Integer> {
 
     @Override
     public void flip() {
-        if (isFlipped() == true) {
-            int dummy = players[0];
-            players[0] = players[1];
-            players[1] = dummy;
-            dummy = stones[0];
-            stones[0] = stones[1];
-            stones[1] = dummy;
-        }//nur wenn der Benutzer die Steine switchen will
+        //Wechsel der besetzten Felder
+        int dummy = players[0];
+        players[0] = players[1];
+        players[1] = dummy;
+        //Wechsel der Spielsteine
+        dummy = stones[0];
+        stones[0] = stones[1];
+        stones[1] = dummy;
+        //flipped erhält eine neue Zuweisung
+        flipped=!flipped;
     }//flip
 
     @Override
     public boolean isFlipped() {
-        if (flipped == true) return true;
-        return false;
+        return flipped;
     }
 
     @Override
