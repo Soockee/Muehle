@@ -37,11 +37,12 @@ public class Board implements MutableBoard<Integer> {
 
     @Override
     public void makeMove(Integer integer) {
-        //TO-DO
+
     }
 
     @Override
     public void undoMove() {
+
         //TO-DO
     }
 
@@ -67,8 +68,9 @@ public class Board implements MutableBoard<Integer> {
 
     @Override
     public boolean isDraw() {
-        //TO-DO
-        return false;
+        int p1 = IntStream.range(0, 24).filter(i -> (players[(turn & 1)] & (1 << i)) > 0).toArray().length;
+        int p2 = IntStream.range(0, 24).filter(i -> (players[(turn & 1)] & (1 << i)) > 0).toArray().length;
+        return ((p1==3)&&(p2==3));
     }
 
     @Override
@@ -82,7 +84,7 @@ public class Board implements MutableBoard<Integer> {
         stones[0] = stones[1];
         stones[1] = dummy;
         //flipped erhält eine neue Zuweisung
-        flipped=!flipped;
+        flipped = !flipped;
     }//flip
 
     @Override
