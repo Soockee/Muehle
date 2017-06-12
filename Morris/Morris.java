@@ -16,6 +16,17 @@ import java.util.stream.Stream;
 
 /**
  * Created by Paul Krappatsch on 11.06.2017.
+ *
+ * Board is implemented as Array:
+ * [0]------------[1]------------[2]
+ *  |                             |
+ *  |  [8]--------[9]-------[10]  |
+ *  |   |   [16]  [17] [18]    |  |
+ * [7] [15] [23]       [19] [11] [3]
+ *  |   |   [22]  [21] [20]    |  |
+ *  |  [14]-------[13]------[12]  |
+ *  |                             |
+ * [6]------------[5]------------[4]
  */
 
 public class Morris implements ImmutableBoard<MorrisMove> {
