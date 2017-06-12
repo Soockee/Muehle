@@ -177,7 +177,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
+     * streamMoves()
+     *      -> chooses the stream
+     *      -> depends on the phase
      *
      *****************************************************************/
     Stream<MorrisMove> streamMoves() {
@@ -210,7 +212,12 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
+     *   streamMovesPhaseMove()
+     *      -> iterates through the every element of the board
+     *      -> filters the positions of the current player
+     *      -> adds a MorrisMove if the direct neighbour is an empty Position
+     *      -> adds the streamMovesWithRemoves to the stream
+     *      -> combines all the mini streams into one big and returns it
      *
      *****************************************************************/
     private Stream<MorrisMove> streamMovesPhaseMove() {
@@ -233,7 +240,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *  streamMovesPhaseJump():
+     *      -> iterates through every element of the board
+     *      -> filters all positions of the current player
+     *      -> adds a MorrisMove for every free Position on the Board
+     *      -> combines all the mini-streams into a big one and returns it
      *
      *****************************************************************/
     private Stream<MorrisMove> streamMovesPhaseJump() {
@@ -250,9 +261,12 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     * isFlipped():
+     *      -> pretty much a getter-method
+     *      -> returns if the board was flipped
      *
      *****************************************************************/
+
     @Override
     public boolean isFlipped() {
         return isFlipped;
@@ -394,16 +408,17 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .filter(i ->
                         Arrays.stream(mills[i]) // stream mill partners
                                 .map((int[] ints) -> (Arrays.stream(ints)
-                                                .map(i1 -> board[i1])
-                                                .filter(i1 -> i1 == player)
-                                                .count()))
+                                        .map(i1 -> board[i1])
+                                        .filter(i1 -> i1 == player)
+                                        .count()))
                                 .filter(integer -> integer == 2)
                                 .count() == 0);
     }
 
 
     /******************************************************************
-     *
+     *  moves():
+     *      returns a list which contains all available moves for the current player on the current board
      *
      *****************************************************************/
     @Override
@@ -411,6 +426,15 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return streamMoves().collect(Collectors.toList());
     }
 
+
+    /******************************************************************
+     *  getMove():
+     *      returns a MorrisMove which holds the information to move from the current board
+     *      to the child
+     *
+     *      returns a illegalArgumentException if no MorrisMove exists which would lead to child
+     *
+     *****************************************************************/
     public MorrisMove getMove(Morris child) {
         MorrisMove res = new MorrisMove();
         res.setFrom(IntStream.range(0, 24)
@@ -436,7 +460,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *  getHistory():
+     *      -> returns a List, which contains the MorrisMoves used to create the current board
      *
      *****************************************************************/
     @Override
@@ -452,7 +477,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *  toString():
+     *      -> creates a textual representation of the Morrisboard
      *
      *****************************************************************/
     @Override
@@ -485,7 +511,14 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
+     *  isWin():
+     *      returns true if:
+     *          => the current player as less then 3 stones
+     *          => the current player as no possible moves
+     *      returns false if:
+     *          => phase 1 is active
      *
+     *     the opponent wins when the return value is true
      *
      *****************************************************************/
     @Override
@@ -498,7 +531,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     * isDraw():
+     *      -> if a games has 50 consecutive moves without removing a stone
+     *      the game ends in a draw
      *
      *****************************************************************/
     @Override
@@ -507,7 +542,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
+     *  flip():
+     *      -> switch the colors of the current Board
      *
      *****************************************************************/
     @Override
