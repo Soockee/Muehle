@@ -135,7 +135,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     private Stream<MorrisMove> streamMovesWithRemoves(MorrisMove morrisMove) {
-        if (numberOfClosedPotentialMills(morrisMove.getTo()) > 0) {
+        if (numberOfClosedPotentialMills(morrisMove) > 0) {
             int[] openstone = findOpenStones(-turn).toArray();
             if (openstone.length == 0) { //if all Stones are in Mills, Mills can be broken
                 return IntStream.range(0, 24)
@@ -148,7 +148,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return Stream.of(morrisMove);
     }
 
-    long numberOfClosedPotentialMills(int potAdd) {
+    long numberOfClosedPotentialMills(MorrisMove move) {
         final int[][][] mills = {
                 {{0, 1, 2,}, {0, 6, 7}},
                 {{0, 1, 2}, {1, 9, 17}},
@@ -177,9 +177,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{22, 21, 20}, {16, 23, 22}},
                 {{16, 23, 22}, {7, 15, 23}}
         };
-        return Arrays.stream(mills[potAdd])
+        return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
                         .map(i -> board[i])
+                        .map(i -> i == move.getFrom() ? 0 : i)
                         .filter(i -> i == turn)
                         .map(Math::abs)
                         .sum()
@@ -286,8 +287,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {-3, -2, -2, -2, -2, -2, -3, -2, -2, -2, -2, -2, -3},
                 {6, -4, -4, -4, -4, -4, 5, -4, -4, -4, -4, -4, 4}
         };
-
-        char[] repr = {'O', '.', 'X', '-', '|', ' '}; // [3] u [4] = ' ' für Spielfeld ohne Linien
+        char[] repr;
+        if (isFlipped) repr = new char[]{'X', '.', 'O', '-', '|', ' '}; // [3] u [4] = ' ' für Spielfeld ohne Linien
+        else repr = new char[]{'O', '.', 'X', '-', '|', ' '};
         return IntStream.rangeClosed(0, 10).mapToObj(row -> Arrays.stream(display[row])
                 .boxed()
                 .map(n -> (n < 0) ? n + 6 : board[n])
@@ -314,11 +316,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     public ImmutableBoard<MorrisMove> flip() {
         Morris res = new Morris();
         res.parent = parent;
-        res.turn = -turn;
+        res.turn = turn;
         res.depth = depth;
         res.isFlipped = !isFlipped;
         res.moveswithoutremoving = moveswithoutremoving;
-        res.board = Arrays.stream(board).map(i -> -i).toArray();
+        res.board = Arrays.copyOf(board, 24);
         return res;
     }
 
@@ -333,8 +335,21 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         final Pattern pattern = Pattern.compile("\\s*(?:Turn\\s*\\d*:?\\s*:)?\\s*(\\d+)?\\s*->\\s*(\\d+)\\s*(?::\\s*(\\d+))?\\s*");
         ImmutableBoard<MorrisMove> morris = new Morris();
         try {
-            List<MorrisMove> moves =  Files.lines(path, StandardCharsets.UTF_8)
+            if (Files.lines(path, StandardCharsets.UTF_8)
                     .filter(s -> !s.isEmpty())
+                    .limit(1L)
+                    .map(s -> s.split(":")[1])
+                    .map(String::trim)
+                    .map(Boolean::valueOf)
+                    .findAny()
+                    .get()
+                    ) {
+                morris =  morris.flip();
+                System.out.println("Test");
+            }
+            List<MorrisMove> moves = Files.lines(path, StandardCharsets.UTF_8)
+                    .filter(s -> !s.isEmpty())
+                    .skip(1L)
                     .map(pattern::matcher)
                     .map(matcher -> {
                         if (!matcher.matches()) throw new IllegalArgumentException("Save was corrupted");
@@ -343,7 +358,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                                 matcher.group(3) == null ? -1 : Integer.parseInt(matcher.group(3)));
                     })
                     .collect(Collectors.toList());
-            for(MorrisMove move : moves) {
+            for (MorrisMove move : moves) {
                 morris = morris.makeMove(move);
             }
         } catch (IOException e) {
