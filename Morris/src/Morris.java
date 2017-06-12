@@ -50,10 +50,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *  phase:
      *      -> phase determinate the movepossibilites of the players
      *          => phase 1: Stones can be set anywhere as long as the element of the board[] is 0
-     *          => phase 2: toDo
-     *          => phase 3: toDo
-     *          => phase 4: toDO
-     *          => phase 5: toDo
+     *          => phase 2: both Player are moving Stones
+     *          => phase 3: first Player is jumping, second moving
+     *          => phase 4: second Player is jumping, first moving
+     *          => phase 5: both player are jumping
      *
      *  isFlipped:
      *      -> determinate the colors of the Stones for the toString() method
@@ -284,12 +284,13 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
+     *@param move the next move
+     *@return the number of mills closed by this move(0 or 1 or 2)
      *
      *****************************************************************/
     long numberOfClosedPotentialMills(MorrisMove move) {
         final int[][][] mills = {
-               /*{{0, 1, 2,}, {0, 6, 7}},
+                {{0, 1, 2,}, {0, 6, 7}},
                 {{0, 1, 2}, {1, 9, 17}},
                 {{0, 1, 2}, {2, 3, 4}},
                 {{2, 3, 4}, {19, 11, 3}},
@@ -314,9 +315,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{18, 19, 20}, {22, 21, 20}},
                 {{22, 21, 20}, {21, 13, 22}},
                 {{22, 21, 20}, {16, 23, 22}},
-                {{16, 23, 22}, {7, 15, 23}}*/
+                {{16, 23, 22}, {7, 15, 23}}
 
-                {{1, 2,}, {6, 7}},
+                /*{{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
                 {{0, 1}, {3, 4}},
                 {{2, 4}, {19, 11}},
@@ -341,22 +342,26 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{18, 19}, {22, 21}},
                 {{22, 20}, {13, 22}},
                 {{21, 20}, {16, 23}},
-                {{16, 22}, {7, 15,}}
+                {{16, 22}, {7, 15,}}*/
         };
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
-                        .map(i -> board[i])
-                        .map(i -> i == move.getFrom() ? 0 : i)
+                        .map(i -> {
+                            if(i == move.getFrom()) return 0;
+                            if(i == move.getTo()) return turn;
+                            return board[i];
+                        })
                         .filter(i -> i == turn)
                         .count()
                 )
-                .filter(i -> i == 2)
+                .filter(i -> i == 3)
                 .count();
     }
 
 
     /******************************************************************
-     *
+     *@param player the player(+1, or -1) for whom the method should return
+     *@return the positions(0-23) for the stones not in a closed mill by player
      *
      *****************************************************************/
     IntStream findOpenStones(int player) { // player being the encoding for the players stones on the board, +1 or -1
@@ -403,7 +408,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *@return list of all possible moves in the current state of the game
      *
      *****************************************************************/
     @Override
@@ -436,7 +441,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *@return a list of Moves leading to the current State of the Game
      *
      *****************************************************************/
     @Override
@@ -452,7 +457,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *@return a String Representation of the Game
      *
      *****************************************************************/
     @Override
@@ -485,7 +490,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *@return true after a player wins => player -turn has won the game
      *
      *****************************************************************/
     @Override
@@ -498,7 +503,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
+     *@return true after thw 50th consecutive Move without removing a Stone
      *
      *****************************************************************/
     @Override
