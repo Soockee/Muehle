@@ -52,10 +52,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *  phase:
      *      -> phase determinate the movepossibilites of the players
      *          => phase 1: Stones can be set anywhere as long as the element of the board[] is 0
-     *          => phase 2:
-     *          => phase 3:
-     *          => phase 4:
-     *          => phase 5
+     *          => phase 2: toDo
+     *          => phase 3: toDo
+     *          => phase 4: toDO
+     *          => phase 5: toDo
      *
      *  isFlipped:
      *      -> determinate the colors of the Stones for the toString() method
