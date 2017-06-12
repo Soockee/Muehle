@@ -177,8 +177,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
-     *
+     * streamMoves():
+     *      -> checks the phase and returns the suitable stream
+     *      -> phase 1: streamMovesPhasePlace()
+     *      -> phase 2 or 3 (turn = -1) or 4 (turn = +1): streamMovesPhaseMove()
+     *      -> otherwise: streamMovesPhaseJump()
      *****************************************************************/
     Stream<MorrisMove> streamMoves() {
         if (phase == 1) return streamMovesPhasePlace();
@@ -210,7 +213,12 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
     /******************************************************************
-     *
+     * streamMovesPhaseMove():
+     *      -> iterates through every bit of the board
+     *      -> filter the positions that belong to the current player
+     *      -> if the direct neighbour is empty, which means the current stone could move there
+     *          => then add the MorrisMove to the Stream (including the Remove-Possibilities through streamMovesWithRemove()
+     *      -> combine all mini-streams into one big stream and return it
      *
      *****************************************************************/
     private Stream<MorrisMove> streamMovesPhaseMove() {
@@ -233,8 +241,14 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
-     *
-     *
+     * streamMovesPhaseJump():
+     *      -> iterate over every bit of the board
+     *      -> filter the positions of the current player
+     *      -> adds a MorrisMove for every free position on the board for every stone the current player got
+     *      -> if a mill is creatable through that move
+     *          => adds all remove possibilities
+     *      -> combine all mini-streams into one big stream and return it
+     *  @return Stream<MorrisMove>
      *****************************************************************/
     private Stream<MorrisMove> streamMovesPhaseJump() {
         return IntStream.range(0, 24)
@@ -250,8 +264,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
 
     /******************************************************************
+     *  isFlipped()
+     *      -> pretty much a Getter-Method
+     *      -> returns the value of the boolean isFlipped
      *
-     *
+     * @return boolean
      *****************************************************************/
     @Override
     public boolean isFlipped() {
@@ -272,7 +289,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     private Stream<MorrisMove> streamMovesWithRemoves(MorrisMove morrisMove) {
         if (numberOfClosedPotentialMills(morrisMove) > 0) { // doesn't account for double mills atm
             int[] openStone = findOpenStones(-turn).toArray();
-            if (openStone.length == 0) {//if all Stones are in Mills, Mills can be broken
+            if (openStone.length == 0) {
                 return IntStream.range(0, 24)
                         .filter(i -> i == -turn)
                         .mapToObj(i -> new MorrisMove(morrisMove.getFrom(), morrisMove.getTo(), i));
@@ -289,7 +306,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *****************************************************************/
     long numberOfClosedPotentialMills(MorrisMove move) {
         final int[][][] mills = {
-               /*{{0, 1, 2,}, {0, 6, 7}},
+                {{0, 1, 2,}, {0, 6, 7}},
                 {{0, 1, 2}, {1, 9, 17}},
                 {{0, 1, 2}, {2, 3, 4}},
                 {{2, 3, 4}, {19, 11, 3}},
@@ -314,9 +331,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{18, 19, 20}, {22, 21, 20}},
                 {{22, 21, 20}, {21, 13, 22}},
                 {{22, 21, 20}, {16, 23, 22}},
-                {{16, 23, 22}, {7, 15, 23}}*/
+                {{16, 23, 22}, {7, 15, 23}}
 
-                {{1, 2,}, {6, 7}},
+               /*{{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
                 {{0, 1}, {3, 4}},
                 {{2, 4}, {19, 11}},
@@ -325,7 +342,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{5, 4}, {0, 7}},
                 {{0, 6}, {15, 23}},
 
-                {{9, 10}, {14, 15}},
+               {{9, 10}, {14, 15}},
                 {{8, 10}, {1, 17}},
                 {{8, 9}, {11, 12}},
                 {{10, 12}, {19, 3}},
@@ -334,23 +351,26 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{13, 12}, {15, 8}},
                 {{14, 8}, {7, 23}},
 
-                {{17, 18}, {23, 22}},
+               {{17, 18}, {23, 22}},
                 {{16, 18}, {1, 9}},
                 {{16, 17}, {19, 20}},
                 {{18, 20}, {11, 3}},
                 {{18, 19}, {22, 21}},
                 {{22, 20}, {13, 22}},
                 {{21, 20}, {16, 23}},
-                {{16, 22}, {7, 15,}}
+                {{16, 22}, {7, 15,}}*/
         };
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
-                        .map(i -> board[i])
-                        .map(i -> i == move.getFrom() ? 0 : i)
+                        .map(i -> {
+                            if(i == move.getFrom()) return 0;
+                            if(i == move.getTo()) return turn;
+                            return board[i];
+                        })
                         .filter(i -> i == turn)
                         .count()
                 )
-                .filter(i -> i == 2)
+                .filter(i -> i == 3)
                 .count();
     }
 
