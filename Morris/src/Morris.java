@@ -359,8 +359,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         };
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
-                        .map(i -> board[i])
-                        .map(i -> i == move.getFrom() ? 0 : i)
+                        .map(i -> i == move.getFrom() ? 0 : board[i])
                         .filter(i -> i == turn)
                         .count()
                 )
