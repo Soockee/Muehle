@@ -1,5 +1,3 @@
-package Morris;
-
 /**
  * Created by Paul Krappatsch on 11.06.2017.
  */
@@ -49,6 +47,11 @@ public class MorrisMove {
 
     public int getRemove() {
         return remove;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.getTo() == ((MorrisMove) obj).getTo() && this.getFrom() == ((MorrisMove) obj).getFrom() && this.getRemove() == ((MorrisMove) obj).getRemove();
     }
 
     @Override

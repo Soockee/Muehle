@@ -1,5 +1,3 @@
-package Morris;
-
 import java.nio.file.Path;
 import java.util.List;
 
@@ -29,6 +27,7 @@ public interface ImmutableBoard<Move> {
     }
 
     ImmutableBoard<Move> flip();
+    boolean isFlipped();
     String toString();
 
     ImmutableBoard<Move> load(String name);
