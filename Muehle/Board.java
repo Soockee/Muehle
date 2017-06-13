@@ -90,7 +90,7 @@ public class Board implements MutableBoard<Integer> {
     @Override
     public boolean isFlipped() {
         return flipped;
-    7}//isFlippped
+    }//isFlippped
 
     @Override
     public void load(String name) {

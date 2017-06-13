@@ -1,3 +1,5 @@
+package Morris;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,22 +15,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Created by Paul Krappatsch, Björn Franke, Simon Stockhause
- * Last edit: 12.06.2017
- *
- * Board is implemented as Array:
- * [0]------------[1]------------[2]
- *  |                             |
- *  |  [8]--------[9]-------[10]  |
- *  |   |   [16]  [17] [18]    |  |
- * [7] [15] [23]       [19] [11] [3]
- *  |   |   [22]  [21] [20]    |  |
- *  |  [14]-------[13]------[12]  |
- *  |                             |
- * [6]------------[5]------------[4]
+ * Created by Paul Krappatsch on 11.06.2017.
  */
 
 public class Morris implements ImmutableBoard<MorrisMove> {
+<<<<<<< .merge_file_a00232
     /******************************************************************
      * Fields:
      *  board[]:
@@ -59,6 +50,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *      -> determinate the colors of the Stones for the toString() method
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
 
     private int[] board = new int[24];
     private int turn = +1;
@@ -68,32 +61,42 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     private int phase = 1;
     private boolean isFlipped = false;
 
-    /******************************************************************
-     *  makeMove(MorrisMove morrisMove):
-     *  checks the phase and calls a method suitable of that phase
-     *
-     *  @return ImmutableBoard<MorrisMove>
-     *
-     *****************************************************************/
+    public static void main(String[] args) {
+
+        ImmutableBoard<MorrisMove> m = new Morris();
+        System.out.println(m.toString());
+        m = m.makeMove(new MorrisMove(0));
+        m = m.makeMove(new MorrisMove(1));
+        m = m.makeMove(new MorrisMove(2));
+        m = m.makeMove(new MorrisMove(3));
+        m = m.makeMove(new MorrisMove(4));
+        m = m.makeMove(new MorrisMove(5));
+        m = m.makeMove(new MorrisMove(6));
+        m = m.makeMove(new MorrisMove(7));
+        m = m.makeMove(new MorrisMove(8));
+        m = m.makeMove(new MorrisMove(9));
+        m = m.makeMove(new MorrisMove(10));
+        m = m.makeMove(new MorrisMove(11));
+        m = m.makeMove(new MorrisMove(16));
+        m = m.makeMove(new MorrisMove(12));
+        m = m.makeMove(new MorrisMove(17));
+        m = m.makeMove(new MorrisMove(14));
+        m = m.makeMove(new MorrisMove(20));
+        m = m.makeMove(new MorrisMove(22));
+        System.out.println(m.toString());
+        m = m.makeMove(new MorrisMove(16, 23, 0));
+        System.out.println(((Morris) m).numberOfClosedPotentialMills(new MorrisMove(5, 13)));
+        System.out.println(m.toString());
+        System.out.println(((Morris) m).streamMovesWithRemoves(new MorrisMove(5, 13)).count());
+        m.moves().forEach(System.out::println);
+        System.out.println(m.moves().size());
+    }
 
     @Override
     public ImmutableBoard<MorrisMove> makeMove(MorrisMove morrisMove) {
         if (phase == 1) return makeMovePhasePlace(morrisMove);
         else return makeMovePhaseMoveAndJump(morrisMove);
     }
-
-    /******************************************************************
-     * makeMovePhasePlace(MorrisMove morrisMove):
-     *      -> creates a childBoard
-     *      -> if MorrisMove contains a remove
-     *          => remove the stone from the board
-     *      -> if the history contains 18 elements (which means every player set all his available Stones
-     *          => set phase = 2
-     *
-     *  this method is only called in phase 1
-     * @return Morris
-     *
-     *****************************************************************/
 
     private Morris makeMovePhasePlace(MorrisMove morrisMove) {
         Morris child = new Morris();
@@ -113,15 +116,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         else child.phase = phase;
         return child;
     }
-
-
-    /******************************************************************
-     *  makeMovePhaseMoveAndJump(MorrisMove morrisMove):
-     *      ->creates a new child
-     *      ->determinates the current phase
-     *
-     *  @return Morris
-     *****************************************************************/
 
     private Morris makeMovePhaseMoveAndJump(MorrisMove morrisMove) {
         Morris child = new Morris();
@@ -148,60 +142,32 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return child;
     }
 
-
-    /******************************************************************
-     *  checkForPhaseJump():
-     *      ->if there are only 3 stones for the current player left:
-     *          => return true
-     *       ->else
-     *          => return false
-     *****************************************************************/
-
     private boolean checkForPhaseJump() {
         return Arrays.stream(board)
                 .filter(n -> n == turn)
                 .count() == 3;
     }
 
-
-    /******************************************************************
-     * undoMove():
-     *  -> return the parent board to undo a Move
-     *
-     *  @return ImmutableBoard<MorrisMove>
-     *****************************************************************/
-
     @Override
     public ImmutableBoard<MorrisMove> undoMove() {
         return parent;
     }
 
+<<<<<<< .merge_file_a00232
     /******************************************************************
      * streamMoves()
      *      -> chooses the stream
      *      -> depends on the phase
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     Stream<MorrisMove> streamMoves() {
         if (phase == 1) return streamMovesPhasePlace();
         else if (phase == 2 || phase == 3 && turn == -1 || phase == 4 && turn == +1)
             return streamMovesPhaseMove();
         return streamMovesPhaseJump();
     }
-
-
-    /******************************************************************
-     *  streamMovesPhasePlace():
-     *      -> iteratres through every bit of the board
-     *      -> filters all empty elements of the board (0=>empty)
-     *      -> creates a MorrisMove for every empty element found
-     *      -> iterates through every MorrisMove which was created and calls streamMovesWithRemoves method
-     *      -> the stream now contains streams with MorrisMoves including the different Remove possibilities
-     *      -> Since the current stream contains many single streams
-     *          => combine all the single streams into one big stream and return it
-     *
-     *   @return Stream<MorrisMove>
-     *****************************************************************/
 
     private Stream<MorrisMove> streamMovesPhasePlace() {
         return IntStream.range(0, 24)
@@ -211,6 +177,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .flatMap(morrisMoveStream -> morrisMoveStream);
     }
 
+<<<<<<< .merge_file_a00232
     /******************************************************************
      *   streamMovesPhaseMove()
      *      -> iterates through the every element of the board
@@ -220,6 +187,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *      -> combines all the mini streams into one big and returns it
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     private Stream<MorrisMove> streamMovesPhaseMove() {
         final int[][] moves = {
                 {1, 7}, {0, 2, 9}, {1, 3}, {2, 11, 4}, {3, 5}, {4, 13, 6}, {5, 7}, {0, 6, 15},
@@ -238,6 +207,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .flatMap(morrisMoveStream -> morrisMoveStream);
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *  streamMovesPhaseJump():
@@ -247,6 +217,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *      -> combines all the mini-streams into a big one and returns it
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     private Stream<MorrisMove> streamMovesPhaseJump() {
         return IntStream.range(0, 24)
                 .filter(from -> board[from] == turn)
@@ -259,6 +231,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .flatMap(morrisMoveStream -> morrisMoveStream);
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      * isFlipped():
@@ -267,22 +240,13 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *
      *****************************************************************/
 
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public boolean isFlipped() {
         return isFlipped;
     }
 
-
-    /******************************************************************
-     * streamMovesWithRemoves(MorrisMove morrisMove):
-     *      -> if potential mills exists e.g 2 stones in a line two cases have to be checked:
-     *          => there are open stones:
-     *              -> returns a stream which contains MorrisMoves with different removes
-     *              -> only contains the remove position for open stones
-     *          => there are no open stones:
-     *              -> every opponent stone can be removed
-     *              -> contains the remove position for every opponent stone
-     *****************************************************************/
     private Stream<MorrisMove> streamMovesWithRemoves(MorrisMove morrisMove) {
         if (numberOfClosedPotentialMills(morrisMove) > 0) { // doesn't account for double mills atm
             int[] openStone = findOpenStones(-turn).toArray();
@@ -296,6 +260,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         }
         return Stream.of(morrisMove);
     }
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *
@@ -330,6 +295,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{22, 21, 20}, {16, 23, 22}},
                 {{16, 23, 22}, {7, 15, 23}}*/
 
+=======
+    long numberOfClosedPotentialMills(MorrisMove move) {
+        final int[][][] mills = {
+>>>>>>> .merge_file_a05588
                 {{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
                 {{0, 1}, {3, 4}},
@@ -357,6 +326,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{21, 20}, {16, 23}},
                 {{16, 22}, {7, 15,}}
         };
+
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
                         .map(i -> i == move.getFrom() ? 0 : board[i])
@@ -367,11 +337,14 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .count();
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     IntStream findOpenStones(int player) { // player being the encoding for the players stones on the board, +1 or -1
         final int[][][] mills = {
                 {{1, 2,}, {6, 7}},
@@ -414,12 +387,15 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                                 .count() == 0);
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *  moves():
      *      returns a list which contains all available moves for the current player on the current board
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public List<MorrisMove> moves() {
         return streamMoves().collect(Collectors.toList());
@@ -457,12 +433,15 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return res;
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *  getHistory():
      *      -> returns a List, which contains the MorrisMoves used to create the current board
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public List<MorrisMove> getHistory() {
         LinkedList<MorrisMove> history = new LinkedList<>();
@@ -474,12 +453,15 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return history;
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *  toString():
      *      -> creates a textual representation of the Morrisboard
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public String toString() {
         final int[][] display = {
@@ -508,6 +490,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         ).collect(Collectors.joining("\n", "\n", "")); // prefix "\n" für jShell
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      *  isWin():
@@ -520,6 +503,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *     the opponent wins when the return value is true
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public boolean isWin() { //return true after winning game, player -turn wins
         return phase != 1 && (streamMoves().count() == 0 ||
@@ -528,6 +513,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                         .count() < 3);
     }
 
+<<<<<<< .merge_file_a00232
 
     /******************************************************************
      * isDraw():
@@ -535,16 +521,21 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *      the game ends in a draw
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public boolean isDraw() {
         return moveswithoutremoving >= 50;
     }
 
+<<<<<<< .merge_file_a00232
     /******************************************************************
      *  flip():
      *      -> switch the colors of the current Board
      *
      *****************************************************************/
+=======
+>>>>>>> .merge_file_a05588
     @Override
     public ImmutableBoard<MorrisMove> flip() {
         Morris res = new Morris();
@@ -557,22 +548,12 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return res;
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     //\s*(?:Turn\s*\d*\s*:)?\s*(\d+)?\s*->\s*(\d+)\s*(?::\s*(\d+))?\s* regex for Loading
     @Override
     public ImmutableBoard<MorrisMove> load(String name) {
         return load(Paths.get(name));
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> load(Path path) {
         final Pattern pattern = Pattern.compile("\\s*(?:Turn\\s*\\d*\\s*:)?\\s*(\\d+)?\\s*->\\s*(\\d+)\\s*(?::\\s*(\\d+))?\\s*");
@@ -610,21 +591,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return morris;
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> save(String name) {
         return save(Paths.get(name));
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> save(Path path) {
         try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
@@ -644,6 +615,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return this; // should maybe be a copy
+        return this;
     }
 }

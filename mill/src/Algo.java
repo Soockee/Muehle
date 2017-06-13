@@ -1,3 +1,4 @@
+package mill.src;
 /**
  * Edit by Simon on 11.06.2017.
  */
@@ -53,6 +54,8 @@ public class Algo {
         System.out.println("Bis jetzt bester Zug ist: " + board.getMove(tmp) + " in Tiefe " + depth);
         return tmp;
     }
+
+
 
     int negaMax(int depth, ConcurrentHashMap<Integer, Integer> ttable, Board board) {
         if (ttable.containsKey(board.hashCode())) {

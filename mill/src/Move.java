@@ -1,4 +1,4 @@
-/**
+package mill.src; /**
  * Edit by Simon on 11.06.2017.
  */
 
