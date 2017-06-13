@@ -1,8 +1,8 @@
 /**
  * Created by Simon on 13.06.2017.
  */
-
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class UI {
 
@@ -39,41 +39,27 @@ public class UI {
     public void checkInput() {
         boolean valid = true;
         MorrisMove move = new MorrisMove();
-        if (board.getPhase() == 1) {
-            System.out.println("choose position to set stone: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setTo(Integer.parseInt(input));
-            } else {
-                valid = false;
-            }
-        } else if (board.getPhase() == 2) {
-            System.out.println("choose stone to move: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setFrom(Integer.parseInt(input));
-            } else {
-                valid = false;
-            }
-            System.out.println("choose location to set: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setTo(Integer.parseInt(input));
-            } else {
-                valid = false;
-            }
-            if(board.moveContainsRemove(move).count() > 0){
-                System.out.print("choose opponent stone to remove: ");
-                input = sc.next();
-                if (isValidMove()){
-                    move.setRemove(Integer.parseInt(input));
-                }
-                else{
-                    valid = false;
-                }
-            }
+        int in;
+        Stream<MorrisMove> poss;
+        if (board.streamMoves().filter(k->k.getFrom()!=-1).count()>0){
+            System.out.print("select stone to move: ");
+            in = sc.nextInt();
+            move.setFrom(in);
+            poss = getValidMoves(1,in);
+        }
+        System.out.print("select location to set stone: ");
+        in = sc.nextInt();
+        move.setTo(in);
+        poss = getValidMoves(2,in);
+        poss = poss.filter(k->k.getRemove()!=-1);
+        if (poss.count()>0){
+            System.out.print("select stone to Remove: ");
+            in = sc.nextInt();
+            move.setRemove(in);
+            poss = getValidMoves(3,in);
         }
         // more phases toDo
+        if (!board.streamMoves().anyMatch(k->k.equals(move)))valid = false;
         if (valid){
             board = (Morris)board.makeMove(move);
         }
@@ -81,11 +67,21 @@ public class UI {
             System.out.println("invalid move pls try again");
         }
     }
-
+    Stream<MorrisMove> getValidMoves(int k , int input) {
+        Stream<MorrisMove> stream = board.streamMoves();
+        if (k == 1){
+            return stream.filter(morrisMove -> morrisMove.getFrom() == input);
+        }
+        else if (k == 2){
+            return stream.filter(morrisMove -> morrisMove.getTo() == input);
+        }
+        else if( k ==3){
+            return stream.filter(morrisMove -> morrisMove.getRemove() == input);
+        }
+        return null;
+    }
     public boolean isValidMove() {
-        System.out.println(input);
-        String regex = "^((?:[0-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|23?)$";
-
+        String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
         if (input.matches(regex)){
             return true;
         } else {
@@ -99,13 +95,4 @@ public class UI {
         buffer += "\n[0: Computer move, ?: Help]";
         return buffer;
     }
-
-    public String start() {
-        String buffer = "";
-        buffer += "Make a move or let me start\n\n";
-        buffer += showOptions();
-        return buffer;
-
-    }
-
 }
