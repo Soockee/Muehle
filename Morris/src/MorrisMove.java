@@ -8,9 +8,7 @@ public class MorrisMove {
     private int from = -1;
     private int to = -1;
     private int remove = -1;
-    private int test = 5;
-    private int test2 = 5;
-    
+
     MorrisMove() {
 
     }
