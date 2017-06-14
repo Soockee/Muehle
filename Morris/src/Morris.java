@@ -3,9 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -186,7 +184,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
      *      -> returns if the board was flipped
      *
      *****************************************************************/
-
     @Override
     public boolean isFlipped() {
         return isFlipped;
@@ -246,7 +243,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
                 .count();
     }
 
-
     /******************************************************************
      *
      *
@@ -293,7 +289,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
                                 .count() == 0);
     }
 
-
     /******************************************************************
      *  moves():
      *      returns a list which contains all available moves for the current player on the current board
@@ -303,7 +298,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
     public List<MorrisMove> moves() {
         return streamMoves().collect(Collectors.toList());
     }
-
 
     /******************************************************************
      *  getMove():
@@ -335,7 +329,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
         );
         return res;
     }
-
 
     /******************************************************************
      *  getHistory():
@@ -403,7 +396,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
                         .filter(n -> turn == n)
                         .count() < 3);
     }
-
 
     /******************************************************************
      * isDraw():
