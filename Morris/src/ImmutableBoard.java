@@ -1,10 +1,9 @@
-import java.nio.file.Path;
 import java.util.List;
 
 /**
  * Created by Paul Krappatsch on 11.06.2017.
  */
-public interface ImmutableBoard<Move> {
+public interface ImmutableBoard<Move>  {
 
     ImmutableBoard<Move> makeMove(Move move);
 
@@ -29,9 +28,4 @@ public interface ImmutableBoard<Move> {
     ImmutableBoard<Move> flip();
     boolean isFlipped();
     String toString();
-
-    ImmutableBoard<Move> load(String name);
-    ImmutableBoard<Move> load(Path path);
-    ImmutableBoard<Move> save(String name);
-    ImmutableBoard<Move> save(Path path);
 }

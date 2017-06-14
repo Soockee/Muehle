@@ -1,4 +1,3 @@
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -7,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,7 +15,7 @@ import java.util.stream.Stream;
  * Created by Paul Krappatsch on 11.06.2017.
  */
 
-public class Morris implements ImmutableBoard<MorrisMove> {
+public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris> {
     /******************************************************************
      * Fields:
      *  board[]:
@@ -27,8 +25,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *  Turn:
      *      -> Represents the current player, also the value used to fill the board
      *
-     *  depth:
-     *      -> toDo
      *  movesWithoutRemoving:
      *      -> to determintate an draw
      *          => 50 moves without removing is a Draw
@@ -39,10 +35,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *  phase:
      *      -> phase determinate the movepossibilites of the players
      *          => phase 1: Stones can be set anywhere as long as the element of the board[] is 0
-     *          => phase 2: toDo
-     *          => phase 3: toDo
-     *          => phase 4: toDO
-     *          => phase 5: toDo
+     *          => phase 2: player can move their stones to an adjacent position
+     *          => phase 3: player one can jumps to any free position, player -1 has to move
+     *          => phase 4: like 3 but reversed
+     *          => phase 5: bot player can jump
      *
      *  isFlipped:
      *      -> determinate the colors of the Stones for the toString() method
@@ -436,8 +432,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return res;
     }
 
-    public Stream<MorrisMove> moveContainsRemove(MorrisMove move){
-        return streamMoves().filter(k->(k.getFrom() == move.getFrom() && k.getTo() == move.getTo() && k.getRemove() != -1));
+    public Stream<MorrisMove> moveContainsRemove(MorrisMove move) {
+        return streamMoves().filter(k -> (k.getFrom() == move.getFrom() && k.getTo() == move.getTo() && k.getRemove() != -1));
     }
 
     /******************************************************************
@@ -446,79 +442,53 @@ public class Morris implements ImmutableBoard<MorrisMove> {
      *****************************************************************/
     //\s*(?:Turn\s*\d*\s*:)?\s*(\d+)?\s*->\s*(\d+)\s*(?::\s*(\d+))?\s* regex for Loading
     @Override
-    public ImmutableBoard<MorrisMove> load(String name) {
+    public Morris load(String name) {
         return load(Paths.get(name));
     }
 
     @Override
-    public ImmutableBoard<MorrisMove> load(Path path) {
-        final Pattern pattern = Pattern.compile("\\s*(?:\\d*:)?\\s*(\\d+)?\\s*->\\s*(\\d+)\\s*(?::\\s*(\\d+))?\\s*");
-        ImmutableBoard<MorrisMove> morris = new Morris();
+    public Morris load(Path path) {
+        Morris load = new Morris();
+        Pattern foramt = Pattern.compile("(?:\\d, )* (?:,(f))");
         try {
-            Matcher firstLine =  Files.lines(path, StandardCharsets.UTF_8)
-                    .filter(s -> !s.isEmpty())
-                    .findFirst()
-                    .map(s -> Pattern.compile("\\s*((?:X\\s*vs.\\s*O)|(?:O\\s*vs.\\s*X))\\s*").matcher(s))
-                    .get();
-            int skip;
-            if(firstLine.matches()) {
-                System.out.println(firstLine.group(1));
-                if(firstLine.group(1).matches("O\\s*vs\\s*X")) {
-                    System.out.println("testA");
-                    morris = morris.flip();
-                }
-                System.out.println("testB");
-                skip = 1;
-            } else skip = 0;
-            System.out.println(skip);
-            List<MorrisMove> moves = Files.lines(path, StandardCharsets.UTF_8)
-                    .filter(s -> !s.isEmpty())
-                    .skip(skip)
-                    .map(pattern::matcher)
-                    .map(matcher -> {
-                        if (!matcher.matches()) throw new IllegalArgumentException("Save was corrupted");
-                        return new MorrisMove(matcher.group(1) == null ? -1 : Integer.parseInt(matcher.group(1)) - 1,
-                                Integer.parseInt(matcher.group(2)) - 1,
-                                matcher.group(3) == null ? -1 : Integer.parseInt(matcher.group(3)) - 1);
-                    })
+            List<String> moves = Files.lines(path, StandardCharsets.UTF_8)
+                    .map(s -> s.split(", "))
+                    .map(Arrays::stream)
+                    .flatMap(stringStream -> stringStream)
+                    .map(String::trim)
                     .collect(Collectors.toList());
-            for (MorrisMove move : moves) {
-                morris = morris.makeMove(move);
+            if (moves.get(moves.size() - 1).toLowerCase().equals("f")) {
+                moves.remove(moves.size() - 1);
+                load = (Morris) load.flip();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return morris;
-    }
+            for (String move : moves) {
+                List<Integer> lst = Stream.of(move)
+                        .map(s -> s.split("-"))
+                        .map(Arrays::stream)
+                        .flatMap(stringStream -> stringStream)
+                        .map(String::trim)
+                        .map(Integer::parseInt)
+                        .collect(Collectors.toList());
+                switch (lst.size()) {
+                    case 3:
+                        load = (Morris) load.makeMove(new MorrisMove(lst.get(0), lst.get(1), lst.get(2)));
+                        break;
+                    case 2:
+                        load = (Morris) load.makeMove(new MorrisMove(lst.get(0), lst.get(1)));
+                        break;
+                    default:
+                        load = (Morris) load.makeMove(new MorrisMove(lst.get(0)));
+                        break;
 
-    @Override
-    public ImmutableBoard<MorrisMove> save(String name) {
-        return save(Paths.get(name));
-    }
-
-    @Override
-    public ImmutableBoard<MorrisMove> save(Path path) {
-        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            int turnCounter = 1;
-            out.write(isFlipped ? "O vs X" : "X vs O");
-            out.newLine();
-            for (MorrisMove move : getHistory()) {
-                out.write(String.format(" %3d: ", turnCounter++));
-                if (move.getFrom() != -1) {
-                    out.write(String.format("%3d", move.getFrom() + 1));
-                } else out.write("   ");
-                out.write(String.format(" -> %3d", move.getTo() + 1));
-                if (move.getRemove() != -1) {
-                    out.write(String.format(" : %3d", move.getRemove() + 1));
                 }
-                out.newLine();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
-        return this;
+        return load;
     }
 
+    // Test only
     public int getPhase() {
         return phase;
     }
