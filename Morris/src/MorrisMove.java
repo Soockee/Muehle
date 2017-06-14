@@ -6,7 +6,6 @@ public class MorrisMove {
     private int from = -1;
     private int to = -1;
     private int remove = -1;
-    final private String = "Paul";
 
     MorrisMove() {
 
