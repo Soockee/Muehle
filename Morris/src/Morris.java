@@ -557,6 +557,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return res;
     }
 
+    public Stream<MorrisMove> moveContainsRemove(MorrisMove move){
+        return streamMoves().filter(k->(k.getFrom() == move.getFrom() && k.getTo() == move.getTo() && k.getRemove() != -1));
+    }
 
     /******************************************************************
      *
@@ -611,6 +614,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
     }
 
 
+
     /******************************************************************
      *
      *
@@ -645,5 +649,9 @@ public class Morris implements ImmutableBoard<MorrisMove> {
             e.printStackTrace();
         }
         return this; // should maybe be a copy
+    }
+
+    public int getPhase() {
+        return phase;
     }
 }
