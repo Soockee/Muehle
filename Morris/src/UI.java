@@ -20,9 +20,6 @@ public class UI {
      **********************************************************/
     Morris board;
     String in;
-    String from;
-    String to;
-    String remove;
     Scanner sc;
 
     public UI() {
