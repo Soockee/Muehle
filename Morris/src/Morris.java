@@ -7,25 +7,14 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Created by Paul Krappatsch, Björn Franke, Simon Stockhause
- * Last edit: 12.06.2017
- *
- * Board is implemented as Array:
- * [0]------------[1]------------[2]
- *  |                             |
- *  |  [8]--------[9]-------[10]  |
- *  |   |   [16]  [17] [18]    |  |
- * [7] [15] [23]       [19] [11] [3]
- *  |   |   [22]  [21] [20]    |  |
- *  |  [14]-------[13]------[12]  |
- *  |                             |
- * [6]------------[5]------------[4]
+ * Created by Paul Krappatsch on 11.06.2017.
  */
 
 public class Morris implements ImmutableBoard<MorrisMove> {
@@ -62,19 +51,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
 
     private int[] board = new int[24];
     private int turn = +1;
-    private int depth = 0;
     private int moveswithoutremoving = 0; // used for detecting draws
     private Morris parent = null;
     private int phase = 1;
     private boolean isFlipped = false;
-
-    /******************************************************************
-     *  makeMove(MorrisMove morrisMove):
-     *  checks the phase and calls a method suitable of that phase
-     *
-     *  @return ImmutableBoard<MorrisMove>
-     *
-     *****************************************************************/
 
     @Override
     public ImmutableBoard<MorrisMove> makeMove(MorrisMove morrisMove) {
@@ -82,26 +62,12 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         else return makeMovePhaseMoveAndJump(morrisMove);
     }
 
-    /******************************************************************
-     * makeMovePhasePlace(MorrisMove morrisMove):
-     *      -> creates a childBoard
-     *      -> if MorrisMove contains a remove
-     *          => remove the stone from the board
-     *      -> if the history contains 18 elements (which means every player set all his available Stones
-     *          => set phase = 2
-     *
-     *  this method is only called in phase 1
-     * @return Morris
-     *
-     *****************************************************************/
-
     private Morris makeMovePhasePlace(MorrisMove morrisMove) {
         Morris child = new Morris();
         child.board = Arrays.copyOf(board, 24);
         child.board[morrisMove.getTo()] = turn;
         child.turn = -turn;
         child.isFlipped = isFlipped;
-        child.depth = depth + 1;
         child.parent = this;
         if (morrisMove.getRemove() != -1) {
             child.board[morrisMove.getRemove()] = 0;
@@ -109,19 +75,10 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         } else {
             child.moveswithoutremoving = moveswithoutremoving + 1;
         }
-        if (child.depth == 18) child.phase = 2;
+        if (child.getHistory().size() == 18) child.phase = 2;
         else child.phase = phase;
         return child;
     }
-
-
-    /******************************************************************
-     *  makeMovePhaseMoveAndJump(MorrisMove morrisMove):
-     *      ->creates a new child
-     *      ->determinates the current phase
-     *
-     *  @return Morris
-     *****************************************************************/
 
     private Morris makeMovePhaseMoveAndJump(MorrisMove morrisMove) {
         Morris child = new Morris();
@@ -130,7 +87,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         child.board[morrisMove.getTo()] = turn;
         child.turn = -turn;
         child.isFlipped = isFlipped;
-        child.depth = depth + 1;
         child.parent = this;
         if (morrisMove.getRemove() != -1) {
             child.board[morrisMove.getRemove()] = 0;
@@ -148,28 +104,11 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return child;
     }
 
-
-    /******************************************************************
-     *  checkForPhaseJump():
-     *      ->if there are only 3 stones for the current player left:
-     *          => return true
-     *       ->else
-     *          => return false
-     *****************************************************************/
-
     private boolean checkForPhaseJump() {
         return Arrays.stream(board)
                 .filter(n -> n == turn)
                 .count() == 3;
     }
-
-
-    /******************************************************************
-     * undoMove():
-     *  -> return the parent board to undo a Move
-     *
-     *  @return ImmutableBoard<MorrisMove>
-     *****************************************************************/
 
     @Override
     public ImmutableBoard<MorrisMove> undoMove() {
@@ -188,20 +127,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
             return streamMovesPhaseMove();
         return streamMovesPhaseJump();
     }
-
-
-    /******************************************************************
-     *  streamMovesPhasePlace():
-     *      -> iteratres through every bit of the board
-     *      -> filters all empty elements of the board (0=>empty)
-     *      -> creates a MorrisMove for every empty element found
-     *      -> iterates through every MorrisMove which was created and calls streamMovesWithRemoves method
-     *      -> the stream now contains streams with MorrisMoves including the different Remove possibilities
-     *      -> Since the current stream contains many single streams
-     *          => combine all the single streams into one big stream and return it
-     *
-     *   @return Stream<MorrisMove>
-     *****************************************************************/
 
     private Stream<MorrisMove> streamMovesPhasePlace() {
         return IntStream.range(0, 24)
@@ -226,7 +151,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {9, 15}, {1, 8, 10, 17}, {9, 11}, {3, 10, 12, 19}, {11, 13}, {5, 12, 14, 21}, {13, 15}, {7, 8, 14, 23},
                 {17, 23}, {9, 16, 18}, {17, 19}, {18, 11, 20}, {19, 21}, {13, 20, 22}, {21, 23}, {15, 16, 22}
         };
-
         return IntStream.range(0, 24)
                 .filter(from -> board[from] == turn)
                 .mapToObj(from -> Arrays.stream(moves[from])
@@ -272,17 +196,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return isFlipped;
     }
 
-
-    /******************************************************************
-     * streamMovesWithRemoves(MorrisMove morrisMove):
-     *      -> if potential mills exists e.g 2 stones in a line two cases have to be checked:
-     *          => there are open stones:
-     *              -> returns a stream which contains MorrisMoves with different removes
-     *              -> only contains the remove position for open stones
-     *          => there are no open stones:
-     *              -> every opponent stone can be removed
-     *              -> contains the remove position for every opponent stone
-     *****************************************************************/
     private Stream<MorrisMove> streamMovesWithRemoves(MorrisMove morrisMove) {
         if (numberOfClosedPotentialMills(morrisMove) > 0) { // doesn't account for double mills atm
             int[] openStone = findOpenStones(-turn).toArray();
@@ -297,39 +210,8 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return Stream.of(morrisMove);
     }
 
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     long numberOfClosedPotentialMills(MorrisMove move) {
         final int[][][] mills = {
-               /*{{0, 1, 2,}, {0, 6, 7}},
-                {{0, 1, 2}, {1, 9, 17}},
-                {{0, 1, 2}, {2, 3, 4}},
-                {{2, 3, 4}, {19, 11, 3}},
-                {{2, 3, 4}, {6, 5, 4}},
-                {{6, 5, 4}, {21, 13, 5}},
-                {{6, 5, 4}, {0, 6, 7}},
-                {{0, 7, 6}, {7, 15, 23}},
-
-                {{8, 9, 10}, {14, 15, 8}},
-                {{8, 9, 10}, {1, 9, 17}},
-                {{8, 9, 10}, {10, 11, 12}},
-                {{10, 11, 12}, {19, 11, 3}},
-                {{10, 11, 12}, {14, 13, 12}},
-                {{14, 13, 12}, {21, 13, 5}},
-                {{14, 13, 12}, {14, 15, 8}},
-                {{14, 15, 8}, {7, 15, 23}},
-
-                {{16, 17, 18}, {16, 23, 22}},
-                {{16, 17, 18}, {1, 9, 17}},
-                {{16, 17, 18}, {18, 19, 20}},
-                {{18, 19, 20}, {19, 11, 3}},
-                {{18, 19, 20}, {22, 21, 20}},
-                {{22, 21, 20}, {21, 13, 22}},
-                {{22, 21, 20}, {16, 23, 22}},
-                {{16, 23, 22}, {7, 15, 23}}*/
-
                 {{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
                 {{0, 1}, {3, 4}},
@@ -357,6 +239,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {{21, 20}, {16, 23}},
                 {{16, 22}, {7, 15,}}
         };
+
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
                         .map(i -> i == move.getFrom() ? 0 : board[i])
@@ -407,7 +290,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 .filter(i ->
                         Arrays.stream(mills[i]) // stream mill partners
                                 .map((int[] ints) -> (Arrays.stream(ints)
-                                        .map(i1 -> board[i1])
+                                        .map(pos -> board[pos])
                                         .filter(i1 -> i1 == player)
                                         .count()))
                                 .filter(integer -> integer == 2)
@@ -495,10 +378,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
                 {-3, -2, -2, -2, -2, -2, -3, -2, -2, -2, -2, -2, -3},
                 {6, -4, -4, -4, -4, -4, 5, -4, -4, -4, -4, -4, 4}
         };
-
-        char[] repr;
-        if (isFlipped) repr = new char[]{'X', '.', 'O', '-', '|', ' '}; // [3] u [4] = ' ' für Spielfeld ohne Linien
-        else repr = new char[]{'O', '.', 'X', '-', '|', ' '};
+        char[] repr = isFlipped ? new char[]{'X', '.', 'O', '-', '|', ' '} : new char[]{'O', '.', 'X', '-', '|', ' '};
         return IntStream.rangeClosed(0, 10).mapToObj(row -> Arrays.stream(display[row])
                 .boxed()
                 .map(n -> (n < 0) ? n + 6 : board[n])
@@ -550,7 +430,6 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         Morris res = new Morris();
         res.parent = parent;
         res.turn = turn;
-        res.depth = depth;
         res.isFlipped = !isFlipped;
         res.moveswithoutremoving = moveswithoutremoving;
         res.board = Arrays.copyOf(board, 24);
@@ -571,37 +450,36 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return load(Paths.get(name));
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> load(Path path) {
-        final Pattern pattern = Pattern.compile("\\s*(?:Turn\\s*\\d*\\s*:)?\\s*(\\d+)?\\s*->\\s*(\\d+)\\s*(?::\\s*(\\d+))?\\s*");
+        final Pattern pattern = Pattern.compile("\\s*(?:\\d*:)?\\s*(\\d+)?\\s*->\\s*(\\d+)\\s*(?::\\s*(\\d+))?\\s*");
         ImmutableBoard<MorrisMove> morris = new Morris();
         try {
-            if (Files.lines(path, StandardCharsets.UTF_8)
+            Matcher firstLine =  Files.lines(path, StandardCharsets.UTF_8)
                     .filter(s -> !s.isEmpty())
-                    .limit(1L)
-                    .map(s -> s.split(":")[1])
-                    .map(String::trim)
-                    .map(Boolean::valueOf)
-                    .findAny()
-                    .get()
-                    ) {
-                morris = morris.flip();
-                System.out.println("Test");
-            }
+                    .findFirst()
+                    .map(s -> Pattern.compile("\\s*((?:X\\s*vs.\\s*O)|(?:O\\s*vs.\\s*X))\\s*").matcher(s))
+                    .get();
+            int skip;
+            if(firstLine.matches()) {
+                System.out.println(firstLine.group(1));
+                if(firstLine.group(1).matches("O\\s*vs\\s*X")) {
+                    System.out.println("testA");
+                    morris = morris.flip();
+                }
+                System.out.println("testB");
+                skip = 1;
+            } else skip = 0;
+            System.out.println(skip);
             List<MorrisMove> moves = Files.lines(path, StandardCharsets.UTF_8)
                     .filter(s -> !s.isEmpty())
-                    .skip(1L)
+                    .skip(skip)
                     .map(pattern::matcher)
                     .map(matcher -> {
                         if (!matcher.matches()) throw new IllegalArgumentException("Save was corrupted");
-                        return new MorrisMove(matcher.group(1) == null ? -1 : Integer.parseInt(matcher.group(1)),
-                                Integer.parseInt(matcher.group(2)),
-                                matcher.group(3) == null ? -1 : Integer.parseInt(matcher.group(3)));
+                        return new MorrisMove(matcher.group(1) == null ? -1 : Integer.parseInt(matcher.group(1)) - 1,
+                                Integer.parseInt(matcher.group(2)) - 1,
+                                matcher.group(3) == null ? -1 : Integer.parseInt(matcher.group(3)) - 1);
                     })
                     .collect(Collectors.toList());
             for (MorrisMove move : moves) {
@@ -613,42 +491,32 @@ public class Morris implements ImmutableBoard<MorrisMove> {
         return morris;
     }
 
-
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> save(String name) {
         return save(Paths.get(name));
     }
 
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
     @Override
     public ImmutableBoard<MorrisMove> save(Path path) {
         try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             int turnCounter = 1;
-            out.write("isFlipped: " + String.valueOf(isFlipped) + "\n");
+            out.write(isFlipped ? "O vs X" : "X vs O");
+            out.newLine();
             for (MorrisMove move : getHistory()) {
-                out.write(String.format("Turn %3d:", turnCounter++));
+                out.write(String.format(" %3d: ", turnCounter++));
                 if (move.getFrom() != -1) {
-                    out.write(String.format("%3d", move.getFrom()));
+                    out.write(String.format("%3d", move.getFrom() + 1));
                 } else out.write("   ");
-                out.write(String.format(" -> %3d", move.getTo()));
+                out.write(String.format(" -> %3d", move.getTo() + 1));
                 if (move.getRemove() != -1) {
-                    out.write(String.format(" : %3d", move.getRemove()));
+                    out.write(String.format(" : %3d", move.getRemove() + 1));
                 }
-                out.write("\n");
+                out.newLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return this; // should maybe be a copy
+        return this;
     }
 
     public int getPhase() {
