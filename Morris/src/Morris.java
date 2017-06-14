@@ -92,7 +92,7 @@ public class Morris implements ImmutableBoard<MorrisMove> {
             child.board[morrisMove.getRemove()] = 0;
             child.moveswithoutremoving = 0;
             if (child.phase != 5 && child.checkForPhaseJump()) { // phase1 stays at 1
-                if (child.phase == 2) child.phase = child.turn == 1 ? 3 : 4;
+                if (phase == 2) child.phase = child.turn == 1 ? 3 : 4;
                 else phase = 5;
                 //else if (child.phase == 3) child.phase = child.turn == 1 ? 3 : 5; // else child.phase = 5;
                 //else if (child.phase == 4) child.phase = child.turn == 1 ? 5 : 4;
