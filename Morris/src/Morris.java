@@ -443,14 +443,14 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
         Morris load = new Morris();
         Pattern foramt = Pattern.compile("(?:\\d, )* (?:,(f))");
         try {
-            List<String> moves = Files.lines(path, StandardCharsets.UTF_8)
+            LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
                     .map(s -> s.split(", "))
                     .map(Arrays::stream)
                     .flatMap(stringStream -> stringStream)
                     .map(String::trim)
-                    .collect(Collectors.toList());
-            if (moves.get(moves.size() - 1).toLowerCase().equals("f")) {
-                moves.remove(moves.size() - 1);
+                    .collect(Collectors.toCollection(LinkedList::new));
+            if (moves.getLast().toLowerCase().equals("f")) {
+                moves.removeLast();
                 load = (Morris) load.flip();
             }
             for (String move : moves) {
@@ -471,7 +471,6 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
                     default:
                         load = (Morris) load.makeMove(new MorrisMove(lst.get(0)));
                         break;
-
                 }
             }
         } catch (IOException ioe) {
