@@ -1,4 +1,3 @@
-package Morris;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 /**
  * Created by Paul Krappatsch on 13.06.2017.
  */
-public class T3 implements ImmutableBoard<Integer> {
+public class T3 implements ImmutableBoard<Integer> , SaveableGame<T3>{
 
     int[] board = new int[9];
     int turn = +1;
@@ -31,10 +30,8 @@ public class T3 implements ImmutableBoard<Integer> {
         System.out.println(board.getHistory());
         System.out.println(board);
         board = board.flip();
-        board.save("save.txt");
         System.out.println(board);
         System.out.println(new T3().load("save.txt"));
-        System.out.println(new T3().load("save.txt").isFlipped());
     }
 
 
@@ -140,64 +137,32 @@ public class T3 implements ImmutableBoard<Integer> {
     }
 
     @Override
-    public ImmutableBoard<Integer> load(String name) {
+    public T3 load(String name) {
         return load(Paths.get(name));
     }
 
     @Override
-    public ImmutableBoard<Integer> load(Path path) {
-        ImmutableBoard<Integer> load = new T3();
-        Pattern validMoves = Pattern.compile("\\s*(?:->)?\\s*(\\d)\\s*");
+    public T3 load(Path path) {
+        T3 load = new T3();
         try {
-            int skip;
-            Matcher firstLine = Files.lines(path, StandardCharsets.UTF_8)
-                    .filter(s -> !s.isEmpty())
-                    .findFirst()
-                    .map(s -> Pattern.compile("\\s*((?:X\\s*vs.\\s*O)|(?:O\\s*vs.\\s*X))\\s*").matcher(s))
-                    .get();
-            if (firstLine.matches()) {
-                if (firstLine.group(1).matches("O\\s*vs.\\s*X")) {
-                    load = load.flip();
-                }
-                skip = 1;
-            } else skip = 0;
-            int[] moves = Files.lines(path, StandardCharsets.UTF_8)
-                    .filter(s -> !s.isEmpty())
-                    .skip(skip)
-                    .map(validMoves::matcher)
-                    .map(matcher -> {
-                        if (matcher.matches())
-                            return Integer.parseInt(matcher.group(1));
-                        else throw new IllegalArgumentException("File was corrupted");
-                    })
-                    .mapToInt(Integer::intValue)
-                    .toArray();
-            for (int move : moves) {
-                load = load.makeMove(move);
+            LinkedList<String> moves =  Files.lines(path, StandardCharsets.UTF_8)
+                    .map(s -> s.split(","))
+                    .flatMap(Arrays::stream)
+                    .map(String::trim)
+                    .collect(Collectors.toCollection(LinkedList::new));
+            if(moves.getLast().toLowerCase().equals("f")) {
+                moves.removeLast();
+                load = (T3) load.flip();
             }
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        return load;
-    }
-
-    @Override
-    public ImmutableBoard<Integer> save(String name) {
-        return save(Paths.get(name));
-    }
-
-    @Override
-    public ImmutableBoard<Integer> save(Path path) {
-        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            out.write(isFlipped ? "O vs X" : "X vs O");
-            out.newLine();
-            for (Integer move : getHistory()) {
-                out.write("-> " + (move + 1) + "\n");
+            for(Integer pos : moves.stream()
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList())) {
+                load = (T3) makeMove(pos);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        return this;
+        return load;
     }
 
     @Override
