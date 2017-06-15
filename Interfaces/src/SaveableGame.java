@@ -19,7 +19,7 @@ public interface SaveableGame<Board extends ImmutableBoard> {
         try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             List history = board.getHistory();
             out.write(history.remove(0).toString());
-            for(Object move : board.getHistory()) {
+            for(Object move : history) {
                 out.write(", ");
                 out.write(move.toString());
             }

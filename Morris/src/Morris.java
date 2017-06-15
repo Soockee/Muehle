@@ -36,7 +36,7 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
      *          => phase 2: player can move their stones to an adjacent position
      *          => phase 3: player one can jumps to any free position, player -1 has to move
      *          => phase 4: like 3 but reversed
-     *          => phase 5: bot player can jump
+     *          => phase 5: both players can jump
      *
      *  isFlipped:
      *      -> determinate the colors of the Stones for the toString() method
@@ -478,6 +478,11 @@ public class Morris implements ImmutableBoard<MorrisMove> , SaveableGame<Morris>
             ioe.printStackTrace();
         }
         return load;
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(board);
     }
 
     // Test only

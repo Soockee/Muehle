@@ -25,15 +25,16 @@ public class T3 implements ImmutableBoard<Integer> , SaveableGame<T3>{
     boolean isFlipped = false;
 
     public static void main(String[] args) {
-        ImmutableBoard<Integer> board = new T3();
-        board = board.makeMove(8, 5, 1);
+        T3 board = new T3();
+        board = (T3) board.makeMove(8, 5, 1);
+        board = (T3) board.flip();
         System.out.println(board.getHistory());
         System.out.println(board);
-        board = board.flip();
-        System.out.println(board);
+        System.out.println(board.isFlipped);
+        board.save(board, "save.txt");
         System.out.println(new T3().load("save.txt"));
+        System.out.println(new T3().load("save.txt").isFlipped);
     }
-
 
     @Override
     public ImmutableBoard<Integer> makeMove(Integer move) {
@@ -101,6 +102,7 @@ public class T3 implements ImmutableBoard<Integer> , SaveableGame<T3>{
         res.board = Arrays.copyOf(board, 24);
         res.parent = parent;
         res.isFlipped = !isFlipped;
+        res.turn = turn;
         return res;
     }
 
@@ -157,7 +159,7 @@ public class T3 implements ImmutableBoard<Integer> , SaveableGame<T3>{
             for(Integer pos : moves.stream()
                     .map(Integer::parseInt)
                     .collect(Collectors.toList())) {
-                load = (T3) makeMove(pos);
+                load = (T3) load.makeMove(pos);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
