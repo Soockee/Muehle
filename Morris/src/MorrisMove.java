@@ -1,4 +1,4 @@
-package Morris;
+
 
 /**
  * Created by Paul Krappatsch on 11.06.2017.
@@ -11,6 +11,20 @@ public class MorrisMove {
 
     MorrisMove() {
 
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MorrisMove) {
+            MorrisMove other = (MorrisMove) obj;
+            if (other.hashCode() == hashCode()) return true;
+        }
+        return false;
     }
 
     MorrisMove(int to) {
@@ -53,7 +67,7 @@ public class MorrisMove {
 
     @Override
     public String toString() {
-        return "(" + (from + 1) + ", " + (to + 1) + ", " + (remove + 1) + ")";
+        return (from != -1 ? from + " - " : "") + to + (remove != -1 ? " - " + remove : "" );
     }
 }
 

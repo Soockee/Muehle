@@ -1,114 +1,167 @@
-/**
- * Created by Simon on 13.06.2017.
- */
-
-import Morris.Morris;
-
+/*************************************************************
+ * Created by Paul Krappatsch, Björn Franke, Simon Stockhause
+ * Last edit: 14.06.2017
+ ************************************************************/
 import java.util.Scanner;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class UI {
 
+    /**********************************************************
+     *  Fields:
+     *      board:
+     *          -> current board: contains all the intelligence
+     *      in:
+     *          ->input of user
+     *      sc:
+     *          -> Scanner to get user inputs from terminal
+     *      
+     **********************************************************/
     Morris board;
-    String input;
-    String from;
-    String to;
-    String remove;
+    String in;
     Scanner sc;
 
     public UI() {
         board = new Morris();
-        Morris.class.;
-        from = "";
-        to = "";
-        remove = "";
-        input = "";
+        in = "";
         sc = new Scanner(System.in);
     }
-
+    /**********************************************************
+     *   play():
+     *      ->Handles win and draw Situation
+     *      ->checkInput()
+     *          => handles the communication with the user
+     *      ->resets the game in case of GameOver
+     **********************************************************/
     public void play() {
         boolean isRunning = true;
         while (isRunning) {
             System.out.println(showOptions());
             checkInput();
+            if (board.isWin()) {
+                String buffer = "";
+                int counter = board.getHistory().size();
+                if (board.isBeginnersTurn()) {
+                    buffer += "O";
+                } else {
+                    buffer += "X";
+                }
+                buffer += " Won!";
+                System.out.println(buffer);
+                //here possibility to save
+                resetGame();
+            }
+            if (board.isDraw()) {
+                System.out.println("The game ended in a Draw!");
+                //here possibility to save
+                resetGame();
+            }
         }
     }
 
-    /**
+    /**************************************************
+     *  checkInput():
+     *      ->Builds up a MorrisMove there are three cases:
+     *          => Placing phase:
+     *              -> user declares his input (position he wants to place his stone)
+     *              -> in case of a mill:
+     *                  => user declares the opponent stone he wants to remove
+     *          => Moving phase:
+     *              -> user declares the stones he wants to move
+     *              -> user declares the position he wants to move his selected stone
+     *              -> in case of mill:
+     *                  => user declares the opponent stone he wants to remove
+     *          =>Jumping phase:
+     *              -> toDo
+     *      ->In case of an invalid move:
+     *          => give the information the user
+     *          => let him do the input process again
      *
      *
-     *
-     *
-     */
+     **************************************************/
     public void checkInput() {
         boolean valid = true;
         MorrisMove move = new MorrisMove();
-        if (board.getPhase() == 1) {
-            System.out.println("choose position to set stone: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setTo(Integer.parseInt(input));
-            } else {
-                valid = false;
+        Stream<MorrisMove> possibleMoves;
+        if (board.streamMoves().filter(k -> k.getFrom() != -1).count() > 0) {
+            System.out.print("Select stone to move: ");
+            in = sc.next();
+            if (!isValidMove()){
+                System.out.println("Invalid move. Please try again");
+                return;
             }
-        } else if (board.getPhase() == 2) {
-            System.out.println("choose stone to move: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setFrom(Integer.parseInt(input));
-            } else {
-                valid = false;
-            }
-            System.out.println("choose location to set: ");
-            input = sc.next();
-            if (isValidMove()) {
-                move.setTo(Integer.parseInt(input));
-            } else {
-                valid = false;
-            }
-            if(board.moveContainsRemove(move).count() > 0){
-                System.out.print("choose opponent stone to remove: ");
-                input = sc.next();
-                if (isValidMove()){
-                    move.setRemove(Integer.parseInt(input));
-                }
-                else{
-                    valid = false;
-                }
-            }
+            move.setFrom(Integer.parseInt(in)-1);
+            possibleMoves = getValidMoves(MorrisMove::getFrom, Integer.parseInt(in)-1);
         }
-        // more phases toDo
-        if (valid){
-            board = (Morris)board.makeMove(move);
+        System.out.print("Select location to set stone: ");
+        in = sc.next();
+        if (!isValidMove()){
+            System.out.println("Invalid move. Please try again");
+            return;
         }
-        else{
-            System.out.println("invalid move pls try again");
-        }
-    }
+        move.setTo(Integer.parseInt(in)-1);
+        possibleMoves = getValidMoves(MorrisMove::getTo, Integer.parseInt(in)-1);
+        possibleMoves = possibleMoves.filter(k -> k.getRemove() != -1);
+        if (possibleMoves.count() > 0) {
+            System.out.print("Select stone to Remove: ");
+            in = sc.next();
+            if (!isValidMove()){
+                System.out.println("Invalid move. Please try again");
+                return;
+            }
+            move.setRemove(Integer.parseInt(in)-1);
 
-    public boolean isValidMove() {
-        System.out.println(input);
-        String regex = "^((?:[0-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|23?)$";
-
-        if (input.matches(regex)){
-            return true;
+            possibleMoves = getValidMoves(MorrisMove::getRemove, Integer.parseInt(in)-1);
+        }
+        if (!board.streamMoves().anyMatch(k -> k.equals(move))) valid = false;
+        if (valid) {
+            board = (Morris) board.makeMove(move);
         } else {
-            return false;
+            System.out.println("Invalid move. Please try again");
         }
     }
 
+    /***********************************************************************************
+     * getValidMoves(Function<MorrisMove, Integer> f, int input):
+     *      -> returns a stream containing valid moves, which match with the input
+     *      -> the function determinates the filter (getTo, getFrom, getRemove)
+     *
+     **********************************************************************************/
+    Stream<MorrisMove> getValidMoves(Function<MorrisMove, Integer> f, int input) {
+        return board.streamMoves().filter(morrisMove -> f.apply(morrisMove) == input);
+    }
+    /***********************************************************************************
+     *  showOptions():
+     *      ->returns a String which contains the Board representation and basic user commands
+     *
+     **********************************************************************************/
     public String showOptions() {
         String buffer = "";
         buffer += board.toString();
         buffer += "\n[0: Computer move, ?: Help]";
         return buffer;
     }
-
-    public String start() {
-        String buffer = "";
-        buffer += "Make a move or let me start\n\n";
-        buffer += showOptions();
-        return buffer;
-
+    /***********************************************************************************
+     * isValidMove():
+     *      ->checks if the input (should be a number) is valid (1-24 are valid inputs)
+     *
+     **********************************************************************************/
+    public boolean isValidMove() {
+        String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
+        if (in.matches(regex)){
+            return true;
+        } else {
+            return false;
+        }
     }
+    /***********************************************************************************
+     * resetGame():
+     *      -> creates a Morris instance and overwrites it with the finished board
+     *
+     **********************************************************************************/
 
+    public void resetGame() {
+        board = new Morris();
+    }
 }
