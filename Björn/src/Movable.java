@@ -1,5 +1,3 @@
-package Björn;
-
 /**
  * Created by Paul Krappatsch on 31.05.2017.
  * -------------------------------------------

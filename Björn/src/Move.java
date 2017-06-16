@@ -1,11 +1,11 @@
-package Björn; /**
+/**
  * Edit by Simon on 11.06.2017.
  */
 
 /**
  * Created by Paul Krappatsch on 03.06.2017.
  */
-public class Move implements Movable{
+public class Move implements Movable {
 
     private int from = -1;
     private int to = -1;
