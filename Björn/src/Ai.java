@@ -1,4 +1,4 @@
-
+package Björn.src;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  */
 public class Ai {
 
-    ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
@@ -50,7 +50,7 @@ public class Ai {
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<ImmutableBoard> listOfMoves = board.moves().collect(Collectors.toList());
+        List<ImmutableBoard> listOfMoves = board.moves();
         for (ImmutableBoard entry : listOfMoves) {
             int val = -alphaBeta(entry, depth - 1, -beta, -alpha);
             bestVal = bestVal > val ? bestVal : val;
@@ -71,6 +71,10 @@ public class Ai {
     }//alphaBeta
 
     public void addDoubles(int value, ConcurrentHashMap<Integer, TableEntry> ttable, ImmutableBoard board) {
+
+    }
+
+    public int playRandom(ImmutableBoard board) {
 
     }
 
