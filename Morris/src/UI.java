@@ -2,6 +2,8 @@
  * Created by Simon on 13.06.2017.
  */
 
+import Morris.Morris;
+
 import java.util.Scanner;
 
 public class UI {
@@ -15,6 +17,7 @@ public class UI {
 
     public UI() {
         board = new Morris();
+        Morris.class.;
         from = "";
         to = "";
         remove = "";
