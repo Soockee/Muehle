@@ -1,5 +1,3 @@
-
-
 /**
  * Created by Paul Krappatsch on 11.06.2017.
  */
