@@ -1,9 +1,13 @@
 package Björn.src;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by xXThermalXx on 13.06.2017.
@@ -55,7 +59,7 @@ public class Ai {
             int val = -alphaBeta(entry, depth - 1, -beta, -alpha);
             bestVal = bestVal > val ? bestVal : val;
             alpha = alpha > val ? alpha : val;
-            if(alpha>=beta) break;
+            if (alpha >= beta) break;
         }//for
 
 
@@ -74,12 +78,34 @@ public class Ai {
 
     }
 
-    public int playRandom(ImmutableBoard board) {
+    public int playRandomly(ImmutableBoard board) {
+        Random r = ThreadLocalRandom.current();
+        while (!board.isDraw()) {
+            if (board.isWin()) {
+                return (board.getHistory().size() % 2 == 0) ? 1 : -1;
+            }
+            List<Movable> listOfMoves = board.moves();
+            Movable nextMove = listOfMoves.get(r.nextInt(listOfMoves.size()));
+            board = board.makeMove(nextMove);
+        }
+        return 0;
+    }//playRandom
 
+    public int[] simulatePlays(ImmutableBoard board, int number) {
+        int[] ints = IntStream
+                .range(0, number)
+                .parallel()
+                .map(i -> playRandomly(board))
+                .toArray();
+        int wins = (int) Arrays.stream(ints).filter(i -> i == 1).count();
+        int losses = (int) Arrays.stream(ints).filter(i -> i == -1).count();
+        return new int[]{wins, losses};
     }
+
 
     int evaluateBoard(ImmutableBoard board) {
         return 0;
     }
+
 
 }//class
