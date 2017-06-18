@@ -97,15 +97,26 @@ public class Ai {
                 .parallel()
                 .map(i -> playRandomly(board))
                 .toArray();
-        int wins = (int) Arrays.stream(ints).filter(i -> i == 1).count();
-        int losses = (int) Arrays.stream(ints).filter(i -> i == -1).count();
+        int wins = (int) Arrays.stream(ints)
+                .filter(i -> i == 1)
+                .count();
+        int losses = (int) Arrays.stream(ints)
+                .filter(i -> i == -1)
+                .count();
         return new int[]{wins, losses};
     }
 
 
     int evaluateBoard(ImmutableBoard board) {
-        return 0;
+        int bestVal=0;
+        for(Object nextMove: board.moves()){
+            ImmutableBoard nextBoard=board.makeMove(nextMove);
+            int[] con=simulatePlays(board,10);
+            if((con[0]-con[1])>bestVal){
+                bestVal =(con[0]-con[1]);
+            }
+        }
+        return bestVal;
     }
-
 
 }//class
