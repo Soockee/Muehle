@@ -97,7 +97,6 @@ public class Ai <Move>{
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
             if (board.isWin()) {
-                System.out.println(board.toString());
                 return (board.getHistory().size() % 2 == 0) ? 1 : -1;
             }
             board=board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
