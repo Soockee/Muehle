@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -54,7 +55,7 @@ public class Ai {
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<ImmutableBoard> listOfMoves = board.moves();
+        List<ImmutableBoard> listOfMoves = (List<ImmutableBoard>) board.moves().collect(Collectors.toList());
         for (ImmutableBoard entry : listOfMoves) {
             int val = -alphaBeta(entry, depth - 1, -beta, -alpha);
             bestVal = bestVal > val ? bestVal : val;
@@ -84,9 +85,8 @@ public class Ai {
             if (board.isWin()) {
                 return (board.getHistory().size() % 2 == 0) ? 1 : -1;
             }
-            List<Movable> listOfMoves = board.moves();
-            Movable nextMove = listOfMoves.get(r.nextInt(listOfMoves.size()));
-            board = board.makeMove(nextMove);
+            List<ImmutableBoard> listOfBoards = (List<ImmutableBoard>) board.moves().collect(Collectors.toList());
+            board=listOfBoards.get(r.nextInt(listOfBoards.size()));
         }
         return 0;
     }//playRandom
@@ -107,11 +107,11 @@ public class Ai {
     }
 
 
-    int evaluateBoard(ImmutableBoard board) {
-        int bestVal=0;
-        for(Object nextMove: board.moves()){
-            ImmutableBoard nextBoard=board.makeMove(nextMove);
-            int[] con=simulatePlays(board,10);
+    public int evaluateBoard(ImmutableBoard board) {
+        int bestVal=Integer.MIN_VALUE;
+        ImmutableBoard[] listMoves= (ImmutableBoard[]) board.moves().toArray();
+        for (ImmutableBoard nextBoard: listMoves){
+            int[] con=simulatePlays(nextBoard,10);
             if((con[0]-con[1])>bestVal){
                 bestVal =(con[0]-con[1]);
             }

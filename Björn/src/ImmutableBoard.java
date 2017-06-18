@@ -1,33 +1,36 @@
 package Björn.src;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
- * Created by Paul Krappatsch on 11.06.2017.
+ * Created by xXThermalXx on 12.06.2017.
  */
-public interface ImmutableBoard<Move>  {
+public interface ImmutableBoard <Move>{
 
-    ImmutableBoard<Move> makeMove(Move move);
-
-    default ImmutableBoard<Move> makeMove(Move... moves) {
-        ImmutableBoard<Move> res = this;
-        for(Move move : moves) res = res.makeMove(move);
-        return res;
+    ImmutableBoard makeMove(Move move);
+    default void makeMove(Move... moves) {
+        for(Move move : moves) makeMove(move);
     }
-
-    ImmutableBoard<Move> undoMove();
-
-    List<Move> moves();
+    ImmutableBoard undoMove();
+    Stream<ImmutableBoard> moves();
     List<Move> getHistory();
 
     boolean isWin();
     boolean isDraw();
-
     default boolean isBeginnersTurn() {
         return getHistory().size() % 2 == 0;
     }
 
-    ImmutableBoard<Move> flip();
+    void flip();
     boolean isFlipped();
     String toString();
-}
+
+    void load(String name);
+    void load(Path path);
+    void save(String name);
+    void save(Path path);
+
+
+}//Inteface
