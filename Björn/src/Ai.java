@@ -87,7 +87,7 @@ public class Ai <Move>{
             if (board.isWin()) {
                 return (board.getHistory().size() % 2 == 0) ? 1 : -1;
             }
-            board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
+            board=board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
         }
         return 0;
     }//playRandom
