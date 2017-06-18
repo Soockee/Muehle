@@ -17,6 +17,16 @@ import java.util.stream.IntStream;
 public class Ai <Move>{
 
     private ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
+    private ImmutableBoard<Move> bestMove=null;
+    private int startDepth=0;
+
+
+    //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
+    public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth){
+        startDepth=board.getHistory().size();
+        alphaBeta(board, depth, Integer.MAX_VALUE, Integer.MIN_VALUE);
+        return bestMove;
+    }
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
@@ -40,17 +50,14 @@ public class Ai <Move>{
         //Evaluierung der Blätter,
         if (board.isWin()) {
             int val = -1000 + board.getHistory().size();
-            addDoubles(val, ttable, board);
             return val;
         }//Gewinnfall
         if (board.isDraw()) {
             int val = 0;
-            addDoubles(0, ttable, board);
             return val;
         }//Unentschieden
         if (depth == 0) {
             int val = evaluateBoard(board);
-            addDoubles(val, ttable, board);
             return val;
         }//gewünschte Tiefe wurde erreicht
 
@@ -59,8 +66,13 @@ public class Ai <Move>{
         for (Move entry : listOfMoves) {
             board=board.makeMove(entry);
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
+            if(val>bestVal){
+                bestVal=val;
+                if(depth==startDepth){
+                    bestMove=board;
+                }
+            }
             board=board.undoMove();
-            bestVal = bestVal > val ? bestVal : val;
             alpha = alpha > val ? alpha : val;
             if (alpha >= beta) break;
         }//for
@@ -85,6 +97,7 @@ public class Ai <Move>{
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
             if (board.isWin()) {
+                System.out.println(board.toString());
                 return (board.getHistory().size() % 2 == 0) ? 1 : -1;
             }
             board=board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
@@ -108,7 +121,7 @@ public class Ai <Move>{
     }
 
 
-    int evaluateBoard(ImmutableBoard board) {
+    public int evaluateBoard(ImmutableBoard board) {
         int bestVal=0;
         List<Move> listMoves=board.moves();
         for (Move nextMove: listMoves){
