@@ -67,7 +67,7 @@ public class MorrisMove {
 
     @Override
     public String toString() {
-        return (from != -1 ? from + " - " : "") + to + (remove != -1 ? " - " + remove : "" );
+        return (from != -1 ? from + "-" : "") + to + (remove != -1 ? "-" + remove : "" );
     }
 }
 

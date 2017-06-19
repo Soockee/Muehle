@@ -3,11 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,6 +14,7 @@ import java.util.stream.Stream;
  */
 
 public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> {
+
     /******************************************************************
      * Fields:
      *  board[]:
@@ -48,17 +45,18 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *****************************************************************/
 
     private final int[] board;
+
     private final static int[][] zobristHash = { // 0 => player +1, 1 => player -1
             new Random().ints(24L).toArray(),
             new Random().ints(24L).toArray(),
     };
+
     private final int zobristHashCode = 1010;//PlaceHolder
     private final int turn;
     private final int movesWithoutRemoving; // used for detecting draws
     private final Morris parent;
     private final int phase;
     private final boolean isFlipped;
-
     Morris() {
         board = new int[24];
         turn = +1;
@@ -67,7 +65,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         phase = 1;
         isFlipped = false;
     }
-
     private Morris(int[] board, int turn, int movesWithoutRemoving, Morris parent, int phase, boolean isFlipped) {
         this.board = board;
         this.turn = turn;
@@ -92,9 +89,20 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 ^ zobristHash[idx][morrisMove.getFrom()]
                 ^ zobristHash[idx][morrisMove.getTo()];
     }
-    
+
     public static void main(String[] args) {
         SaveableGame<Morris> game = new Morris();
+    }
+
+    @Override
+    public ImmutableBoard<MorrisMove> parent() {
+        return parent;
+    }
+
+    @Override
+    public Optional<ImmutableBoard<MorrisMove>> makeMoveNew(MorrisMove morrisMove) {
+        if (phase == 1) return Optional.of(makeMovePhasePlace(morrisMove));
+        else return Optional.of(makeMovePhaseMoveAndJump(morrisMove));
     }
 
     @Override
@@ -148,8 +156,13 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     }
 
     @Override
-    public ImmutableBoard<MorrisMove> undoMove() {
-        return parent;
+    public Stream<ImmutableBoard<MorrisMove>> childs() {
+        return streamMoves().map(this::makeMoveNew).map(Optional::get);
+    }
+
+    @Override
+    public List<MorrisMove> moves() {
+        return streamMoves().collect(Collectors.toList());
     }
 
     /******************************************************************
@@ -331,16 +344,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     }
 
     /******************************************************************
-     *  moves():
-     *      returns a list which contains all available moves for the current player on the current board
-     *
-     *****************************************************************/
-    @Override
-    public List<MorrisMove> moves() {
-        return streamMoves().collect(Collectors.toList());
-    }
-
-    /******************************************************************
      *  getMove():
      *      returns a MorrisMove which holds the information to move from the current board
      *      to the child
@@ -348,27 +351,25 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *      returns a illegalArgumentException if no MorrisMove exists which would lead to child
      *
      *****************************************************************/
-    private MorrisMove getMove(Morris child) {
-        MorrisMove res = new MorrisMove();
-        res.setFrom(IntStream.range(0, 24)
-                .filter(i -> board[i] == turn)
-                .filter(i -> child.board[i] == 0)
-                .findAny()
-                .orElse(-1)
-        );
-        res.setTo(IntStream.range(0, 24)
+    @Override
+    public Optional<MorrisMove> getMove() {
+        if(parent == null) return Optional.empty();
+        return Optional.of(new MorrisMove(IntStream.range(0, 24)
+                .filter(i -> parent.board[i] == turn)
                 .filter(i -> board[i] == 0)
-                .filter(i -> child.board[i] == turn)
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("no MorrisMove possible"))
-        );
-        res.setRemove(IntStream.range(0, 24)
-                .filter(i -> board[i] == -turn)
-                .filter(i -> child.board[i] == 0)
+                .orElse(-1),
+        IntStream.range(0, 24)
+                .filter(i -> parent.board[i] == 0)
+                .filter(i -> board[i] == turn)
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("no MorrisMove possible")),
+        IntStream.range(0, 24)
+                .filter(i -> parent.board[i] == -turn)
+                .filter(i -> board[i] == 0)
                 .findAny()
                 .orElse(-1)
-        );
-        return res;
+        ));
     }
 
     /******************************************************************
@@ -377,11 +378,25 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *****************************************************************/
     @Override
+    public Stream<ImmutableBoard<MorrisMove>> getHistoryNew() {
+        return Stream.iterate(this, morris -> morris.parent() != null, ImmutableBoard::parent);
+    }
+
+    @Override
     public List<MorrisMove> getHistory() {
+        LinkedList<MorrisMove> history = new LinkedList<>();
+        Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
+                .filter(t3 ->t3.parent != null)
+                .map(Morris::getMove)
+                .map(Optional::get)
+                .forEachOrdered(history::addFirst);
+        return history;
+    }
+
+    @Override
+    public boolean isBeginnersTurn() {
         return Stream.iterate(this, morris -> morris.parent != null, morris -> morris.parent)
-                .sequential()
-                .map(morris -> morris.parent.getMove(morris))
-                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
+                .count() % 2 == 0;
     }
 
     /******************************************************************
