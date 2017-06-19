@@ -68,7 +68,6 @@ public class Ai <Move>{
         for (Move entry : listOfMoves) {
             board=board.makeMove(entry);
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
-            System.out.println(val+" >"+bestVal);
             if(val>bestVal){
                 bestVal=val;
                 bestMove=board;
