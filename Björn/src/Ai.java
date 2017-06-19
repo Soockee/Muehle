@@ -24,12 +24,14 @@ public class Ai <Move>{
     //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
     public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth){
         startDepth=board.getHistory().size();
-        alphaBeta(board, depth, Integer.MAX_VALUE, Integer.MIN_VALUE);
+        alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         return bestMove;
     }
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
+
+
 
         //wennn der Wert schon im hashTable vorliegt
         TableEntry te = ttable.get(board.hashCode());
@@ -57,8 +59,8 @@ public class Ai <Move>{
             return val;
         }//Unentschieden
         if (depth == 0) {
-            int val = evaluateBoard(board);
-            return val;
+            //int val = evaluateBoard(board);
+            return -3 ;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
@@ -66,9 +68,11 @@ public class Ai <Move>{
         for (Move entry : listOfMoves) {
             board=board.makeMove(entry);
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
+            System.out.println(val+" >"+bestVal);
             if(val>bestVal){
                 bestVal=val;
-                if(depth==startDepth){
+                if(depth==(startDepth-1)){
+                    System.out.println("Hallo");
                     bestMove=board;
                 }
             }
@@ -96,10 +100,16 @@ public class Ai <Move>{
     public int playRandomly(ImmutableBoard board) {
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-            if (board.isWin()) {
-                return (board.getHistory().size() % 2 == 0) ? 1 : -1;
+            try {
+                if (board.isWin()) {
+                    return (board.isBeginnersTurn() ) ? 1 : -1;
+                }
+                board = board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
             }
-            board=board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
+            catch (Exception e){
+                System.out.println(board.toString());
+                return -4;
+            }
         }
         return 0;
     }//playRandom
