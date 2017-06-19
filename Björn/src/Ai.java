@@ -71,10 +71,7 @@ public class Ai <Move>{
             System.out.println(val+" >"+bestVal);
             if(val>bestVal){
                 bestVal=val;
-                if(depth==(startDepth-1)){
-                    System.out.println("Hallo");
-                    bestMove=board;
-                }
+                bestMove=board;
             }
             board=board.undoMove();
             alpha = alpha > val ? alpha : val;
