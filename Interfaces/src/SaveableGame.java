@@ -16,10 +16,9 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
         save(board, Paths.get(name));
     }
 
-    default void save(Board board, Path path) {
+    default void saveNew(Board board, Path path) {
         try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            out.write(board.getHistory()
-                    .skip(1L) // empty Board from Start
+            out.write(board.getHistoryNew()
                     .map(ImmutableBoard::getMove)
                     .map(Object::toString)
                     .collect(Collectors.joining(","))
@@ -29,6 +28,19 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
             ioe.printStackTrace();
         }
     }
+
+    default void save(Board board, Path path) {
+        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            out.write(board.getHistory().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","))
+            );
+            if (board.isFlipped()) out.write(",f");
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
 
     Board load(String name);
 
