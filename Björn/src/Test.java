@@ -10,10 +10,9 @@ public class Test {
     public static void main(String [] args){
         Morris board=new Morris();
         Ai ki=new Ai();
-        int i=0;
-        while (i<100){
-            System.out.println(ki.playRandomly(board));
-        }
+        //System.out.println(board.toString());
+        System.out.println(ki.evaluateAlphaBeta(board,10).toString());
+
 
     }
 }
