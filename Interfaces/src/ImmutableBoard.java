@@ -3,7 +3,7 @@ import java.util.List;
 /**
  * Created by Paul Krappatsch on 11.06.2017.
  */
-public interface ImmutableBoard<Move>  {
+public interface ImmutableBoard<Move> {
 
     ImmutableBoard<Move> makeMove(Move move);
 
