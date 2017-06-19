@@ -72,7 +72,10 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
 
     @Override
     public Stream<ImmutableBoard<Integer>> getHistoryNew() {
-        return Stream.iterate(this, t3 -> t3.parent() != null, ImmutableBoard::parent);
+        T3[] historyReversed =  Stream.iterate(this, t3 -> t3.parent() != null, t3 -> t3.previous)
+         .toArray(T3[]::new);
+        return IntStream.rangeClosed(1,historyReversed.length)
+                .mapToObj(i -> historyReversed[historyReversed.length - i]);
     }
 
     @Override

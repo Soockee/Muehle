@@ -379,7 +379,11 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *****************************************************************/
     @Override
     public Stream<ImmutableBoard<MorrisMove>> getHistoryNew() {
-        return Stream.iterate(this, morris -> morris.parent() != null, ImmutableBoard::parent);
+        Morris[] historyReversed =
+                Stream.iterate(this, morris -> morris.parent() != null, morris -> morris.parent)
+                .toArray(Morris[]::new);
+        return IntStream.rangeClosed(1,historyReversed.length)
+                .mapToObj(i -> historyReversed[historyReversed.length - i]);
     }
 
     @Override
@@ -421,10 +425,10 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         };
         char[] repr = isFlipped ? new char[]{'X', '.', 'O', '-', '|', ' '} : new char[]{'O', '.', 'X', '-', '|', ' '};
         return IntStream.rangeClosed(0, 10).mapToObj(row -> Arrays.stream(display[row])
-                .boxed()
+                //.boxed()
                 .map(n -> (n < 0) ? n + 6 : board[n])
                 .map(n -> repr[n + 1])
-                .map(n -> Character.toString(n))
+                .mapToObj(n -> Character.toString( (char) n))
                 .collect(Collectors.joining("  ")) //1-3 Felder Abstand
         ).collect(Collectors.joining("\n", "\n", "")); // prefix "\n" für jShell
     }
@@ -470,10 +474,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         return new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, !isFlipped);
     }
 
-    public Stream<MorrisMove> moveContainsRemove(MorrisMove move) {
-        return streamMoves().filter(k -> (k.getFrom() == move.getFrom() && k.getTo() == move.getTo() && k.getRemove() != -1));
-    }
-
     /******************************************************************
      *
      *
@@ -487,10 +487,10 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     @Override
     public Morris load(Path path) {
         Morris load = new Morris();
-        Pattern foramt = Pattern.compile("(?:\\d, )* (?:,(f))");
+        Pattern format = Pattern.compile("(?:\\d, )* (?:,(f))");
         try {
             LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
-                    .map(s -> s.split(", "))
+                    .map(s -> s.split(","))
                     .map(Arrays::stream)
                     .flatMap(stringStream -> stringStream)
                     .map(String::trim)
