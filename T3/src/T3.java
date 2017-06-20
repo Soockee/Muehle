@@ -161,6 +161,11 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
+    public boolean isBeginnersTurn() {
+        return turn == +1;
+    }
+
+    @Override
     public T3 load(Path path) {
         T3 load = new T3();
         try {
@@ -232,5 +237,4 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         int[] newBoard = IntStream.range(0, 9).map(i -> board[pattern[i]]).toArray();
         return new T3(newBoard, turn, previous, isFlipped);
     }
-
 }

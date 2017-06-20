@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -12,14 +13,16 @@ import java.util.stream.Collectors;
 
 public interface SaveableGame<Board extends ImmutableBoard<?>> {
 
-    default void save(Board board, String name) {
-        save(board, Paths.get(name));
+    default void saveNew(Board board, String name) {
+        saveNew(board, Paths.get(name));
     }
 
-    default void saveNew(Board board, Path path) {
+    default void saveNew(
+            Board board, Path path) {
         try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             out.write(board.getHistoryNew()
                     .map(ImmutableBoard::getMove)
+                    .map(Optional::get)
                     .map(Object::toString)
                     .collect(Collectors.joining(","))
             );
@@ -27,6 +30,10 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+    }
+
+    default void save(Board board, String name) {
+        save(board, Paths.get(name));
     }
 
     default void save(Board board, Path path) {

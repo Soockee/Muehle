@@ -55,7 +55,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     private final int turn;
     private final int movesWithoutRemoving; // used for detecting draws
     private final Morris parent;
-    private final int phase;
+    int phase; // for debugging only. later moves to private final
     private final boolean isFlipped;
     Morris() {
         board = new int[24];
@@ -355,17 +355,17 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     public Optional<MorrisMove> getMove() {
         if(parent == null) return Optional.empty();
         return Optional.of(new MorrisMove(IntStream.range(0, 24)
-                .filter(i -> parent.board[i] == turn)
+                .filter(i -> parent.board[i] == -turn)
                 .filter(i -> board[i] == 0)
                 .findAny()
                 .orElse(-1),
         IntStream.range(0, 24)
                 .filter(i -> parent.board[i] == 0)
-                .filter(i -> board[i] == turn)
+                .filter(i -> board[i] == -turn)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("no MorrisMove possible")),
         IntStream.range(0, 24)
-                .filter(i -> parent.board[i] == -turn)
+                .filter(i -> parent.board[i] == turn)
                 .filter(i -> board[i] == 0)
                 .findAny()
                 .orElse(-1)
@@ -399,8 +399,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
 
     @Override
     public boolean isBeginnersTurn() {
-        return Stream.iterate(this, morris -> morris.parent != null, morris -> morris.parent)
-                .count() % 2 == 0;
+        return turn == +1;
     }
 
     /******************************************************************
@@ -432,7 +431,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 .collect(Collectors.joining("  ")) //1-3 Felder Abstand
         ).collect(Collectors.joining("\n", "\n", "")); // prefix "\n" für jShell
     }
-
 
     /******************************************************************
      *  isWin():
@@ -558,11 +556,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             return other.hashCode() == hashCode();
         }
         return false;
-    }
-
-    // Test only
-    public int getPhase() {
-        return phase;
     }
 
     Morris mirror() {
