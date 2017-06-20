@@ -1,4 +1,5 @@
 
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,10 +21,11 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     private final int turn;
     private final T3 previous;
     private final boolean isFlipped;
-
     public static void main(String[] args) {
         T3 board = new T3();
+        board.streamMoves().forEach(System.out::println);
         board = (T3) board.makeMove(8, 5, 1);
+        board.streamMoves().forEach(System.out::println);
         board = (T3) board.flip();
         System.out.println(board.getHistory());
         System.out.println(board);

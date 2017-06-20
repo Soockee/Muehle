@@ -17,7 +17,6 @@ public class UI {
      *          ->input of user
      *      sc:
      *          -> Scanner to get user inputs from terminal
-     *      
      **********************************************************/
     Morris board;
     String in;
