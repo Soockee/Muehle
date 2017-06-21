@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 /**
  * Created by xXThermalXx on 13.06.2017.
- * - Der Code muss noch in die andere Ai Klasse eingefügt werden
+ * - Version mit guter Performance beim AlphaBeta
  */
 public class Ai {
 
@@ -126,15 +126,4 @@ public class Ai {
         return val[2] - val[0];
     }//evaluateBoard
 
-    /*
-    for (ImmutableBoard nextBoard : listMoves) {
-            board = nextBoard;
-            int[] con = simulatePlays(board, 5);
-            if ((con[0] - con[1]) > bestVal) {
-                bestVal = (con[0] - con[1]);
-            }
-            board = board.parent();
-        }
-
-     */
 }//class
