@@ -3,6 +3,7 @@ package Björn.src;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,8 +16,6 @@ public class Ai {
     private ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
     private ImmutableBoard bestMove = null;
     private int startDepth = 0;
-
-
 
 
     //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
@@ -106,24 +105,25 @@ public class Ai {
     }//playRandomly
 
     public int[] simulatePlays(ImmutableBoard board, int number) {
-        int[] ints = IntStream
+        return IntStream
                 .range(0, number)
                 .parallel()
                 .map(i -> playRandomly(board, board.isBeginnersTurn()))
-                .toArray();
-        int wins = (int) Arrays.stream(ints)
-                .filter(i -> i == 1)
-                .count();
-        int losses = (int) Arrays.stream(ints)
-                .filter(i -> i == -1)
-                .count();
-        return new int[]{wins, losses};
+                .collect(
+                        () -> new int[3],
+                        (int[] r, int i) -> r[i + 1] += 1,
+                        (int[] ints, int[] ints2) -> {
+                            ints[0] = ints2[0] = ints[0] + ints2[0];
+                            ints[1] = ints2[1] = ints[1] + ints2[1];
+                            ints[2] = ints2[2] = ints[2] + ints2[2];
+                        }
+                );
     }//simulatePlays
 
 
     public int evaluateBoard(ImmutableBoard board) {
-        int[] val=simulatePlays(board, 20);
-        return val[0]-val[1];
+        int[] val = simulatePlays(board, 20);
+        return val[2] - val[0];
     }//evaluateBoard
 
     /*
