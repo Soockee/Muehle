@@ -8,10 +8,12 @@ import java.util.Arrays;
  */
 public class Test {
     public static void main(String [] args){
+
+        
         Morris board=new Morris();
         Ai ki=new Ai();
         //System.out.println(board.toString());
-        System.out.println(ki.evaluateAlphaBeta(board,10).toString());
+        System.out.println(ki.evaluateAlphaBeta(board,4).toString());
 
 
     }

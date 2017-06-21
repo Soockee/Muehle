@@ -5,13 +5,9 @@ package Björn.src;
  */
 public class MorrisMove {
 
-    private int from = -1;
-    private int to = -1;
-    private int remove = -1;
-
-    MorrisMove() {
-
-    }
+    private int from ;
+    private int to;
+    private int remove;
 
     @Override
     public int hashCode() {
@@ -27,24 +23,6 @@ public class MorrisMove {
         return false;
     }
 
-    MorrisMove(int to) {
-        this(-1, to, -1);
-    }
-
-    MorrisMove(int from, int to) {
-        this(from, to, -1);
-    }
-
-    MorrisMove(int from, int to, int remove) {
-        this.from = from;
-        this.to = to;
-        this.remove = remove;
-    }
-
-    public int getFrom() {
-        return from;
-    }
-
     public void setFrom(int from) {
         this.from = from;
     }
@@ -57,6 +35,22 @@ public class MorrisMove {
         this.remove = remove;
     }
 
+    MorrisMove() {
+        from = -1;
+        to = -1;
+        remove = -1;
+    }
+
+    MorrisMove(int from, int to, int remove) {
+        this.from = from;
+        this.to = to;
+        this.remove = remove;
+    }
+
+    public int getFrom() {
+        return from;
+    }
+
     public int getTo() {
         return to;
     }
@@ -67,7 +61,7 @@ public class MorrisMove {
 
     @Override
     public String toString() {
-        return (from != -1 ? from + " - " : "") + to + (remove != -1 ? " - " + remove : "" );
+        return (from != -1 ? from + "-" : "") + to + (remove != -1 ? "-" + remove : "" );
     }
 }
 

@@ -14,23 +14,26 @@ import java.util.stream.IntStream;
  * Created by xXThermalXx on 13.06.2017.
  * - Der Code muss noch in die andere Ai Klasse eingefügt werden
  */
-public class Ai <Move>{
+public class Ai {
 
     private ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
-    private ImmutableBoard<Move> bestMove=null;
-    private int startDepth=0;
+    private ImmutableBoard bestMove = null;
+    private int startDepth = 0;
 
 
     //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
-    public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth){
-        startDepth=board.getHistory().size();
+    public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth) {
+        startDepth = board.getHistory().size();
         alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         return bestMove;
     }
 
+    public int alphaBetaAsStream() {
+        return 0;
+    }
+
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
-
 
 
         //wennn der Wert schon im hashTable vorliegt
@@ -60,19 +63,19 @@ public class Ai <Move>{
         }//Unentschieden
         if (depth == 0) {
             //int val = evaluateBoard(board);
-            return -3 ;
+            return -3;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<Move> listOfMoves = board.moves();
-        for (Move entry : listOfMoves) {
-            board=board.makeMove(entry);
+        List<ImmutableBoard> listOfMoves = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
+        for (ImmutableBoard entry : listOfMoves) {
+            board = entry;
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
-            if(val>bestVal){
-                bestVal=val;
-                bestMove=board;
+            board = board.parent();
+            if (val > bestVal) {
+                bestVal = val;
+                bestMove = board;
             }
-            board=board.undoMove();
             alpha = alpha > val ? alpha : val;
             if (alpha >= beta) break;
         }//for
@@ -89,32 +92,24 @@ public class Ai <Move>{
         return bestVal;
     }//alphaBeta
 
-    public void addDoubles(int value, ConcurrentHashMap<Integer, TableEntry> ttable, ImmutableBoard board) {
-
-    }
-
-    public int playRandomly(ImmutableBoard board) {
+    public int playRandomly(ImmutableBoard board, boolean turn) {
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-            try {
                 if (board.isWin()) {
-                    return (board.isBeginnersTurn() ) ? 1 : -1;
+                    return (board.isBeginnersTurn()==turn) ? 1 : -1;
                 }
-                board = board.makeMove(board.moves().get(r.nextInt(board.moves().size())));
-            }
-            catch (Exception e){
-                System.out.println(board.toString());
-                return -4;
-            }
+                ImmutableBoard[] con = (ImmutableBoard[]) board.childs().toArray();
+                board = con[r.nextInt(con.length)];
+
         }
         return 0;
-    }//playRandom
+    }//playRandomly
 
     public int[] simulatePlays(ImmutableBoard board, int number) {
         int[] ints = IntStream
                 .range(0, number)
                 .parallel()
-                .map(i -> playRandomly(board))
+                .map(i -> playRandomly(board, board.isBeginnersTurn()))
                 .toArray();
         int wins = (int) Arrays.stream(ints)
                 .filter(i -> i == 1)
@@ -123,21 +118,21 @@ public class Ai <Move>{
                 .filter(i -> i == -1)
                 .count();
         return new int[]{wins, losses};
-    }
+    }//simulatePlays
 
 
     public int evaluateBoard(ImmutableBoard board) {
-        int bestVal=0;
-        List<Move> listMoves=board.moves();
-        for (Move nextMove: listMoves){
-            board=board.makeMove(nextMove);
-            int[] con=simulatePlays(board,10);
-            if((con[0]-con[1])>bestVal){
-                bestVal =(con[0]-con[1]);
+        int bestVal = 0;
+        List<ImmutableBoard> listMoves = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
+        for (ImmutableBoard nextBoard : listMoves) {
+            board = nextBoard;
+            int[] con = simulatePlays(board, 10);
+            if ((con[0] - con[1]) > bestVal) {
+                bestVal = (con[0] - con[1]);
             }
-            board=board.undoMove();
+            board = board.parent();
         }
         return bestVal;
-    }
+    }//evaluateBoard
 
 }//class
