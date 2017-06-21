@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
  */
 public class Ai {
 
-    private ConcurrentHashMap<Integer, TableEntry> ttable = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
     private ImmutableBoard bestMove = null;
     private int startDepth = 0;
 
@@ -79,11 +79,11 @@ public class Ai {
 
 
         if (bestVal <= alphaStart) {
-            ttable.put(board.hashCode(), new TableEntry(bestVal, 2));
+            ttable.put(board, new TableEntry(bestVal, 2));
         } else if (bestVal >= beta) {
-            ttable.put(board.hashCode(), new TableEntry(bestVal, 1));
+            ttable.put(board, new TableEntry(bestVal, 1));
         } else {
-            ttable.put(board.hashCode(), new TableEntry(bestVal, 0));
+            ttable.put(board, new TableEntry(bestVal, 0));
         }
 
         return bestVal;
