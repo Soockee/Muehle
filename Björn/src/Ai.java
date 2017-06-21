@@ -1,12 +1,8 @@
 package Björn.src;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -62,8 +58,8 @@ public class Ai {
             return val;
         }//Unentschieden
         if (depth == 0) {
-            //int val = evaluateBoard(board);
-            return -3;
+            int val = evaluateBoard(board);
+            return val;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
@@ -95,11 +91,11 @@ public class Ai {
     public int playRandomly(ImmutableBoard board, boolean turn) {
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-                if (board.isWin()) {
-                    return (board.isBeginnersTurn()==turn) ? 1 : -1;
-                }
-                ImmutableBoard[] con = (ImmutableBoard[]) board.childs().toArray();
-                board = con[r.nextInt(con.length)];
+            if (board.isWin()) {
+                return (board.isBeginnersTurn() == turn) ? 1 : -1;
+            }
+            List<ImmutableBoard> container = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
+            board = container.get(r.nextInt(container.size()));
 
         }
         return 0;
@@ -124,15 +120,25 @@ public class Ai {
     public int evaluateBoard(ImmutableBoard board) {
         int bestVal = 0;
         List<ImmutableBoard> listMoves = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
-        for (ImmutableBoard nextBoard : listMoves) {
+        OptionalInt k=listMoves
+                .stream()
+                .mapToInt(nextBoard -> {
+                    int[] con = simulatePlays(board, 5);
+                    return con[0]-con[1];
+                })
+                .max();
+        return k.getAsInt();
+    }//evaluateBoard
+
+    /*
+    for (ImmutableBoard nextBoard : listMoves) {
             board = nextBoard;
-            int[] con = simulatePlays(board, 10);
+            int[] con = simulatePlays(board, 5);
             if ((con[0] - con[1]) > bestVal) {
                 bestVal = (con[0] - con[1]);
             }
             board = board.parent();
         }
-        return bestVal;
-    }//evaluateBoard
 
+     */
 }//class

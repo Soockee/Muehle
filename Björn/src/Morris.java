@@ -492,7 +492,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *****************************************************************/
     @Override
     public boolean isDraw() {
-        return movesWithoutRemoving >= 50;
+        return movesWithoutRemoving >= 20;
     }
 
     /******************************************************************
