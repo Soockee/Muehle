@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -28,7 +29,6 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         System.out.println(board.getHistory());
         System.out.println(board);
         System.out.println(board.isFlipped);
-        board.save(board, "save.txt");
         System.out.println(new T3().load("save.txt"));
         System.out.println(new T3().load("save.txt").isFlipped);
     }
@@ -168,6 +168,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     @Override
     public T3 load(Path path) {
         T3 load = new T3();
+        Pattern format = Pattern.compile("()");
         try {
             LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
                     .map(s -> s.split(","))
@@ -193,19 +194,16 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof T3) {
-            T3 other = (T3) obj;
-            return other.hashCode() == hashCode();
-        }
-        return false;
+        return obj instanceof T3 && getIDsofGroup().anyMatch(i -> i == ((T3) obj).getID());
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(getIDsofGroup().toArray());
+        return getIDsofGroup().reduce((i1, i2) ->i1 ^ i2).getAsInt();
     }
 
     int getID() {
+        //return IntStream.range(0,9).map(i -> board[i] << i).reduce((i1, i2) -> i1 | i2).getAsInt();
         return Arrays.hashCode(board);
     }
 

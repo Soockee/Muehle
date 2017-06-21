@@ -11,7 +11,7 @@ public interface ImmutableBoard<Move> {
      * https://moodle.thm.de/pluginfile.php/333961/mod_resource/content/1/Notizen.Woche12.html
      */
 
-    default Optional<ImmutableBoard<Move>> makeMoveNew(Move move) { // Optional may be changed again later
+    default Optional<ImmutableBoard<Move>> makeMoveNew(Move move) {// may be changed to Optional later
         return childs()
                 .filter(moveImmutableBoard -> moveImmutableBoard.getMove().equals(move))
                 .findAny();

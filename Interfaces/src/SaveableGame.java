@@ -13,43 +13,38 @@ import java.util.stream.Collectors;
 
 public interface SaveableGame<Board extends ImmutableBoard<?>> {
 
-    default void saveNew(Board board, String name) {
+    default void saveNew(Board board, String name) throws IOException {
         saveNew(board, Paths.get(name));
     }
 
-    default void saveNew(
-            Board board, Path path) {
-        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            out.write(board.getHistoryNew()
-                    .map(ImmutableBoard::getMove)
-                    .map(Optional::get)
-                    .map(Object::toString)
-                    .collect(Collectors.joining(","))
-            );
-            if (board.isFlipped()) out.write(",f");
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+    default void saveNew(Board board, Path path) throws IOException {
+        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+        out.write(board.getHistoryNew()
+                .map(ImmutableBoard::getMove)
+                .map(Optional::get)
+                .map(Object::toString)
+                .collect(Collectors.joining(","))
+        );
+        if (board.isFlipped()) out.write(",f");
+        out.close();
     }
 
-    default void save(Board board, String name) {
+    default void save(Board board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
-    default void save(Board board, Path path) {
-        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            out.write(board.getHistory().stream()
-                    .map(Object::toString)
-                    .collect(Collectors.joining(","))
-            );
-            if (board.isFlipped()) out.write(",f");
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+    default void save(Board board, Path path) throws IOException {
+        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+        out.write(board.getHistory().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","))
+        );
+        if (board.isFlipped()) out.write(",f");
+        out.close();
     }
 
 
-    Board load(String name);
+    Board load(String name) throws IOException;
 
-    Board load(Path path);
+    Board load(Path path) throws IOException;
 }
