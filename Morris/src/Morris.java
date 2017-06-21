@@ -369,10 +369,10 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         if (parent == null) return Optional.empty();
         return Optional.of(new MorrisMove(
                 IntStream.range(0, 24)
-                .filter(i -> parent.board[i] == -turn)
-                .filter(i -> board[i] == 0)
-                .findAny()
-                .orElse(-1),
+                        .filter(i -> parent.board[i] == -turn)
+                        .filter(i -> board[i] == 0)
+                        .findAny()
+                        .orElse(-1),
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == 0)
                         .filter(i -> board[i] == -turn)
@@ -402,15 +402,10 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
 
     @Override
     public List<MorrisMove> getHistory() {
-        //LinkedList<MorrisMove> history = new LinkedList<>();
         return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
-                .filter(t3 -> t3.parent != null)
                 .map(Morris::getMove)
                 .map(Optional::get)
-                //.parallel() => ok
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-                //.forEachOrdered(history::addFirst);
-        //return history;
     }
 
     @Override
@@ -440,7 +435,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         };
         char[] repr = isFlipped ? new char[]{'X', '.', 'O', '-', '|', ' '} : new char[]{'O', '.', 'X', '-', '|', ' '};
         return IntStream.rangeClosed(0, 10).mapToObj(row -> Arrays.stream(display[row])
-                //.boxed()
                 .map(n -> (n < 0) ? n + 6 : board[n])
                 .map(n -> repr[n + 1])
                 .mapToObj(n -> Character.toString((char) n))
@@ -475,7 +469,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *****************************************************************/
     @Override
     public boolean isDraw() {
-        return movesWithoutRemoving >= 50;
+        return phase != 1 && movesWithoutRemoving >= 20;
     }
 
     /******************************************************************
@@ -492,63 +486,66 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *
      *****************************************************************/
-    //\s*(?:Turn\s*\d*\s*:)?\s*(\d+)?\s*->\s*(\d+)\s*(?::\s*(\d+))?\s* regex for Loading
+    //\s*(?:Turn\s*\d*\s*:)?\s*(\d+)?\s*->\s*(\d+)\s*(?::\s*(\d+))?\s* regex for Loading <= deprecated
     @Override
-    public Morris load(String name) {
+    public Morris load(String name) throws IOException {
         return load(Paths.get(name));
     }
 
     @Override
-    public Morris load(Path path) {
+    public Morris load(Path path) throws IOException {
         Morris load = new Morris();
         final Pattern format = Pattern.compile("(?:\\d, )* (?:,(f))");
-        try {
-            LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
-                    .map(s -> s.split(","))
+        LinkedList<String> moveParts = Files.lines(path, StandardCharsets.UTF_8)
+                .map(s -> s.split(","))
+                .map(Arrays::stream)
+                .flatMap(stringStream -> stringStream)
+                .map(String::trim)
+                .collect(Collectors.toCollection(LinkedList::new));
+        if (moveParts.getLast().toLowerCase().equals("f")) {
+            moveParts.removeLast();
+            load.flip();
+        }
+        for (String movePart : moveParts) {
+            List<Integer> lst = Stream.of(movePart)
+                    .map(s -> s.split("-"))
                     .map(Arrays::stream)
                     .flatMap(stringStream -> stringStream)
                     .map(String::trim)
-                    .collect(Collectors.toCollection(LinkedList::new));
-            if (moves.getLast().toLowerCase().equals("f")) {
-                moves.removeLast();
-                load.flip();
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+            switch (lst.size()) {
+                case 3:
+                    load = (Morris) load.makeMove(new MorrisMove(lst.get(0), lst.get(1), lst.get(2)));
+                    break;
+                case 2:
+                    load = (Morris) load.makeMove(load.phase == 1 ?
+                            new MorrisMove(-1, lst.get(0), lst.get(1)) :
+                            new MorrisMove(lst.get(0), lst.get(1), -1));
+                    break;
+                default:
+                    load = (Morris) load.makeMove(new MorrisMove(-1, lst.get(0), -1));
+                    break;
             }
-            for (String move : moves) {
-                List<Integer> lst = Stream.of(move)
-                        .map(s -> s.split("-"))
-                        .map(Arrays::stream)
-                        .flatMap(stringStream -> stringStream)
-                        .map(String::trim)
-                        .map(Integer::parseInt)
-                        .collect(Collectors.toList());
-                switch (lst.size()) {
-                    case 3:
-                        load = (Morris) load.makeMove(new MorrisMove(lst.get(0), lst.get(1), lst.get(2)));
-                        break;
-                    case 2:
-                        load = (Morris) load.makeMove(load.phase == 1 ?
-                                new MorrisMove(-1, lst.get(0), lst.get(1)) :
-                                new MorrisMove(lst.get(0), lst.get(1), -1));
-                        break;
-                    default:
-                        load = (Morris) load.makeMove(new MorrisMove(-1, lst.get(0), -1));
-                        break;
-                }
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
         }
         return load;
     }
 
+    boolean isValidMove(MorrisMove move) {
+        return move.getRemove() >= -1 && move.getRemove() < 24 &&
+                move.getTo()    >=  0 && move.getTo()     < 24 &&
+                move.getFrom()  >= -1 && move.getFrom()   < 24 &&
+                streamMoves().anyMatch(morrisMove -> morrisMove.equals(move));
+    }
+
     @Override
-    public int hashCode() {
+    public int hashCode() { //? improve HashCode function with new and better Hash-Method
         return Arrays.hashCode(getGroup().mapToInt(Morris::getID).sorted().toArray());
     }
 
     public Stream<Morris> getGroup() {
         return Stream.of(
-                new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, isFlipped),
+                this, //this cuz immutable boards => new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, isFlipped), //? maybe this
                 rotate(),
                 rotate().rotate(),
                 rotate().rotate().rotate(),
@@ -576,7 +573,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         return obj instanceof Morris && getGroup()
                 //.mapToInt(Morris::getID)
                 //.anyMatch(i -> i == ((Morris) obj).getID());
-                .anyMatch(morris -> turn == ((Morris) obj).turn && Arrays.equals(morris.board, ((Morris) obj).board));
+                .anyMatch(morris -> morris.turn == ((Morris) obj).turn && Arrays.equals(morris.board, ((Morris) obj).board));
     }
 
     Morris mirror() {
