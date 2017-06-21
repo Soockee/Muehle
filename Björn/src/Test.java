@@ -13,6 +13,7 @@ public class Test {
             Ai ki = new Ai();
             System.out.println(ki.evaluateAlphaBeta(board,4).toString());
             System.out.println((System.nanoTime() - startTime) / 1000000000);
+
     }
 }
 

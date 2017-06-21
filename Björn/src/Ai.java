@@ -17,6 +17,8 @@ public class Ai {
     private int startDepth = 0;
 
 
+
+
     //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
     public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth) {
         startDepth = board.getHistory().size();
@@ -89,14 +91,16 @@ public class Ai {
     }//alphaBeta
 
     public int playRandomly(ImmutableBoard board, boolean turn) {
+        if (board.isWin()) {
+            return (board.isBeginnersTurn() == turn) ? 1 : -1;
+        }
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
+            List<ImmutableBoard> container = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
+            board = container.get(r.nextInt(container.size()));
             if (board.isWin()) {
                 return (board.isBeginnersTurn() == turn) ? 1 : -1;
             }
-            List<ImmutableBoard> container = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
-            board = container.get(r.nextInt(container.size()));
-
         }
         return 0;
     }//playRandomly
@@ -118,16 +122,8 @@ public class Ai {
 
 
     public int evaluateBoard(ImmutableBoard board) {
-        int bestVal = 0;
-        List<ImmutableBoard> listMoves = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
-        OptionalInt k=listMoves
-                .stream()
-                .mapToInt(nextBoard -> {
-                    int[] con = simulatePlays(board, 5);
-                    return con[0]-con[1];
-                })
-                .max();
-        return k.getAsInt();
+        int[] val=simulatePlays(board, 20);
+        return val[0]-val[1];
     }//evaluateBoard
 
     /*
