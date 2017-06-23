@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -28,9 +29,6 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         System.out.println(board.getHistory());
         System.out.println(board);
         System.out.println(board.isFlipped);
-        board.save(board, "save.txt");
-        System.out.println(new T3().load("save.txt"));
-        System.out.println(new T3().load("save.txt").isFlipped);
     }
 
     private T3(int[] board, int turn, T3 previous, boolean isFlipped) { // full constructor
@@ -72,9 +70,9 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
 
     @Override
     public Stream<ImmutableBoard<Integer>> getHistoryNew() {
-        T3[] historyReversed =  Stream.iterate(this, t3 -> t3.parent() != null, t3 -> t3.previous)
-         .toArray(T3[]::new);
-        return IntStream.rangeClosed(1,historyReversed.length)
+        T3[] historyReversed = Stream.iterate(this, t3 -> t3.parent() != null, t3 -> t3.previous)
+                .toArray(T3[]::new);
+        return IntStream.rangeClosed(1, historyReversed.length)
                 .mapToObj(i -> historyReversed[historyReversed.length - i]);
     }
 
@@ -82,7 +80,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     public List<Integer> getHistory() {
         LinkedList<Integer> history = new LinkedList<>();
         Stream.iterate(this, t3 -> t3.previous != null, t3 -> t3.previous)
-                .filter(t3 ->t3.previous != null)
+                .filter(t3 -> t3.previous != null)
                 .map(T3::getMove)
                 .map(Optional::get)
                 .forEachOrdered(history::addFirst);
@@ -135,7 +133,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
 
     @Override
     public Optional<Integer> getMove() {
-        if(previous == null) return Optional.empty();
+        if (previous == null) return Optional.empty();
         return IntStream.range(0, 9)
                 .filter(pos -> board[pos] != previous.board[pos])
                 .boxed()
@@ -156,7 +154,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public T3 load(String name) {
+    public T3 load(String name)throws IOException  {
         return load(Paths.get(name));
     }
 
@@ -166,46 +164,44 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public T3 load(Path path) {
+    public T3 load(Path path) throws IOException {
         T3 load = new T3();
-        try {
-            LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
-                    .map(s -> s.split(","))
-                    .flatMap(Arrays::stream)
-                    .map(String::trim)
-                    .collect(Collectors.toCollection(LinkedList::new));
-            if (moves.getLast().toLowerCase().equals("f")) {
-                moves.removeLast();
-                load = (T3) load.flip();
-            }
-            for (Integer pos : moves.stream()
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList())) {
-                if(load.streamMoves().anyMatch(i -> i == pos)) {
-                    load = (T3) load.makeMove(pos);
-                } else throw new IllegalArgumentException("File contains invalid Move");
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        Pattern format = Pattern.compile("()");
+        LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
+                .map(s -> s.split(","))
+                .flatMap(Arrays::stream)
+                .map(String::trim)
+                .collect(Collectors.toCollection(LinkedList::new));
+        if (moves.getLast().toLowerCase().equals("f")) {
+            moves.removeLast();
+            load = (T3) load.flip();
+        }
+        for (Integer pos : moves.stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toList())) {
+            if (load.isValidMove(pos)) {
+                load = (T3) load.makeMove(pos);
+            } else throw new IOException("File contains invalid Moves");
         }
         return load;
     }
 
+    boolean isValidMove(Integer pos) {
+        return pos > 0 && pos < 8 && streamMoves().anyMatch(i -> i == pos);
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof T3) {
-            T3 other = (T3) obj;
-            return other.hashCode() == hashCode();
-        }
-        return false;
+        return obj instanceof T3 && getIDsofGroup().anyMatch(i -> i == ((T3) obj).getID());
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(getIDsofGroup().toArray());
+        return getIDsofGroup().reduce((i1, i2) -> i1 ^ i2).getAsInt();
     }
 
     int getID() {
+        //return IntStream.range(0,9).map(i -> board[i] << i).reduce((i1, i2) -> i1 | i2).getAsInt();
         return Arrays.hashCode(board);
     }
 
