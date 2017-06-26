@@ -13,24 +13,31 @@ import java.util.stream.IntStream;
 public class Ai {
 
     private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<ImmutableBoard, Integer> bestMoves = new ConcurrentHashMap<>();
+    private HashMap<Integer, ImmutableBoard> bestMoves = new HashMap<>();
 
-    public ImmutableBoard evaluateBestBoard(ImmutableBoard board, int depth) {
-        return null;
+    public void evaluateBestBoard(ImmutableBoard board, int depth, int seconds) {
+        long end = System.currentTimeMillis() + (seconds*1000);
+        IntStream
+                .range(0, depth)
+                .forEach(i -> {
+                    while (System.currentTimeMillis()<end){
+                        bestMoves.put(i,iterativeDepthSearch(board,i));
+                    }//while the algorithm has time to calculate
+                });
     }
 
-
-    //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
-    public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth) throws Throwable {
-        ImmutableBoard bestBoard = (ImmutableBoard) board
-                .childs()
-                .max(Comparator.comparingInt(item -> -alphaBeta((ImmutableBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
-                .orElseThrow(Error::new);
+    public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth)  {
+        ImmutableBoard bestBoard = null;
+        try {
+            bestBoard = (ImmutableBoard) board
+                    .childs()
+                    .max(Comparator.comparingInt(item -> -alphaBeta((ImmutableBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
+                    .orElseThrow(Error::new);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         return bestBoard;
     }//evaluateAlphaBeta
-
-    //Comparator.comparingInt(board1 -> alphaBeta(board,depth,Integer.MIN_VALUE,Integer.MAX_VALUE))
-    //alphaBeta(board,i,Integer.MIN_VALUE,Integer.MAX_VALUE)
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
@@ -128,4 +135,7 @@ public class Ai {
         return val[2] - val[0];
     }//evaluateBoard
 
+    public HashMap<Integer, ImmutableBoard> getBestMoves(){
+        return bestMoves;
+    }
 }//class
