@@ -1,5 +1,8 @@
+import javax.print.attribute.IntegerSyntax;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -13,20 +16,26 @@ public interface ImmutableBoard<Move> {
 
     default Optional<ImmutableBoard<Move>> makeMoveNew(Move move) {// may be changed to Optional later
         return childs()
-                .filter(moveImmutableBoard -> moveImmutableBoard.getMove().equals(move))
+                .filter(board -> board.getMove().equals(move))
                 .findAny();
     }
+
     default Optional<ImmutableBoard<Move>> makeMoveNew(Move... moves) {
-        ImmutableBoard<Move> res = this;
-        for(Move move : moves) {
-            res = this.makeMoveNew(move).get();
+        Optional<ImmutableBoard<Move>> res = Optional.of(this);
+        for (Move move : moves) {
+            if(!res.isPresent()) return Optional.empty();
+            else res = res.get().makeMoveNew(move);
         }
-        return Optional.of(res);
+        return res;
     }
-    Optional<Move>  getMove();
-    ImmutableBoard<Move> parent();
-    Stream<ImmutableBoard<Move>> childs();
-    Stream<ImmutableBoard<Move>> getHistoryNew();
+
+    Optional<Move> getMove();//returns Move from parentBoard to this instance
+
+    ImmutableBoard<Move> parent(); // returns parent board, one Move behind
+
+    Stream<ImmutableBoard<Move>> childs(); //target boards
+
+    Stream<ImmutableBoard<Move>> history(); //ordered from beginning to most recent Move
 
     /*
      * old interface below
@@ -34,12 +43,15 @@ public interface ImmutableBoard<Move> {
      */
 
     ImmutableBoard<Move> makeMove(Move move);
+
     default ImmutableBoard<Move> makeMove(Move... moves) {
         ImmutableBoard<Move> b = this;
-        for(Move move : moves) b = b.makeMove(move);
+        for (Move move : moves) b = b.makeMove(move);
         return b;
     }
+
     List<Move> getHistory();
+
     List<Move> moves();
 
     /*
@@ -47,11 +59,16 @@ public interface ImmutableBoard<Move> {
      */
 
     boolean isWin();
+
     boolean isDraw();
+
     default boolean isBeginnersTurn() {
         return getHistory().size() % 2 == 0; // getHistoryNew().count() & 1 == 0
     }
+
     ImmutableBoard<Move> flip();
+
     boolean isFlipped();
+
     String toString();
 }

@@ -183,7 +183,7 @@ public class UI {
     }
 
     public void save(){
-            board.save(board,  "save.txt");
+            //board.save(board,  "save.txt");
             System.out.println("Savefilepath: " + Paths.get("save.txt").toAbsolutePath().toString());
     }
     public void askSaveGame(){

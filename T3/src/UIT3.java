@@ -102,7 +102,7 @@ public class UIT3 {
         System.out.println(buffer);
     }
     public void save(){
-        board.save(board,  "save.txt");
+        //board.save(board,  "save.txt");
         System.out.println("Savefilepath: " + Paths.get("save.txt").toAbsolutePath().toString());
     }
     public void printGuide(){
