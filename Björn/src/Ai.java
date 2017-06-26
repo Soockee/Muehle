@@ -9,25 +9,28 @@ import java.util.stream.IntStream;
 
 /**
  * Created by xXThermalXx on 13.06.2017.
- * - Version mit guter Performance beim AlphaBeta
  */
 public class Ai {
 
     private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private ImmutableBoard bestMove = null;
-    private int startDepth = 0;
+    private ConcurrentHashMap<ImmutableBoard, Integer> bestMoves = new ConcurrentHashMap<>();
+
+    public ImmutableBoard evaluateBestBoard(ImmutableBoard board, int depth) {
+        return null;
+    }
 
 
     //evaluiert den besten Wert für ein übergebenesBoard mit dem AlphaBetaAlgorithmus
-    public ImmutableBoard evaluateAlphaBeta(ImmutableBoard board, int depth) {
-        startDepth = board.getHistory().size();
-        alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        return bestMove;
-    }
+    public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth) throws Throwable {
+        ImmutableBoard bestBoard = (ImmutableBoard) board
+                .childs()
+                .max(Comparator.comparingInt(item -> -alphaBeta((ImmutableBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
+                .orElseThrow(Error::new);
+        return bestBoard;
+    }//evaluateAlphaBeta
 
-    public int alphaBetaAsStream() {
-        return 0;
-    }
+    //Comparator.comparingInt(board1 -> alphaBeta(board,depth,Integer.MIN_VALUE,Integer.MAX_VALUE))
+    //alphaBeta(board,i,Integer.MIN_VALUE,Integer.MAX_VALUE)
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
@@ -71,7 +74,6 @@ public class Ai {
             board = board.parent();
             if (val > bestVal) {
                 bestVal = val;
-                bestMove = board;
             }
             alpha = alpha > val ? alpha : val;
             if (alpha >= beta) break;
@@ -122,7 +124,7 @@ public class Ai {
 
 
     public int evaluateBoard(ImmutableBoard board) {
-        int[] val = simulatePlays(board, 20);
+        int[] val = simulatePlays(board, 10);
         return val[2] - val[0];
     }//evaluateBoard
 
