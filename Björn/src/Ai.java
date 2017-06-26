@@ -16,9 +16,10 @@ public class Ai {
     private HashMap<Integer, ImmutableBoard> bestMoves = new HashMap<>();
 
     public void evaluateBestBoard(ImmutableBoard board, int depth, int seconds) {
-        long end = System.currentTimeMillis() + (seconds*1000);
+        final long end = System.currentTimeMillis() + (seconds*1000);
         IntStream
                 .range(0, depth)
+                .parallel()
                 .forEach(i -> {
                     while (System.currentTimeMillis()<end){
                         bestMoves.put(i,iterativeDepthSearch(board,i));
@@ -128,7 +129,6 @@ public class Ai {
                         }
                 );
     }//simulatePlays
-
 
     public int evaluateBoard(ImmutableBoard board) {
         int[] val = simulatePlays(board, 10);
