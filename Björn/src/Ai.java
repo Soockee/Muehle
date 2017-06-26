@@ -3,7 +3,6 @@ package Björn.src;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,17 +14,14 @@ public class Ai {
     private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
     private HashMap<Integer, ImmutableBoard> bestMoves = new HashMap<>();
 
-    public void evaluateBestBoard(ImmutableBoard board, int depth, int seconds) {
-        final long end = System.currentTimeMillis() + (seconds*1000);
+    public void evaluateBestBoard(ImmutableBoard board, int depth) {
         IntStream
                 .range(0, depth)
                 .parallel()
                 .forEach(i -> {
-                    while (System.currentTimeMillis()<end){
-                        bestMoves.put(i,iterativeDepthSearch(board,i));
-                    }//while the algorithm has time to calculate
+                    bestMoves.put(i,iterativeDepthSearch(board,i));
                 });
-    }
+    }//evaluateBestBoard
 
     public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth)  {
         ImmutableBoard bestBoard = null;
@@ -38,7 +34,7 @@ public class Ai {
             throwable.printStackTrace();
         }
         return bestBoard;
-    }//evaluateAlphaBeta
+    }//iterativeDepthSearch
 
     public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
