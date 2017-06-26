@@ -7,13 +7,13 @@ import java.util.ArrayList;
  */
 public class CollectThread extends Thread {
 
-    ArrayList<Integer> list=new ArrayList<>();
-    boolean runs=true;
+    ArrayList<Integer> list = new ArrayList<>();
+    boolean runs = true;
 
     @Override
     public void run() {
-        final long end = System.currentTimeMillis() + (2*1000);
-        while (System.currentTimeMillis()<end&&runs){
+        final long end = System.currentTimeMillis() + (2 * 1000);
+        while (System.currentTimeMillis() < end && runs) {
             list.add(1);
             //System.out.println(list.size());
         }

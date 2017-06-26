@@ -51,7 +51,7 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
     }
 
 
-    Board load(String name);
+    Board load(String name) throws IOException;
 
-    Board load(Path path);
+    Board load(Path path) throws IOException;
 }
