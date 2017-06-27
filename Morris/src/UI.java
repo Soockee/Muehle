@@ -2,6 +2,8 @@
  * Created by Paul Krappatsch, Björn Franke, Simon Stockhause
  * Last edit: 14.06.2017
  ************************************************************/
+
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -18,15 +20,16 @@ public class UI {
      *      sc:
      *          -> Scanner to get user inputs from terminal
      **********************************************************/
-    Morris board;
-    String in;
-    Scanner sc;
+    private Morris board;
+    private String in;
+    private Scanner sc;
 
     public UI() {
         board = new Morris();
         in = "";
         sc = new Scanner(System.in);
     }
+
     /**********************************************************
      *   play():
      *      ->Handles win and draw Situation
@@ -39,23 +42,7 @@ public class UI {
         while (isRunning) {
             System.out.println(printInteraction());
             checkInput();
-            if (board.isWin()) {
-                String buffer = "";
-                if (board.isBeginnersTurn()) {
-                    buffer += "O";
-                } else {
-                    buffer += "X";
-                }
-                buffer += " Won!";
-                System.out.println(buffer);
-                askSaveGame();
-                resetGame();
-            }
-            if (board.isDraw()) {
-                System.out.println("The game ended in a Draw!");
-                askSaveGame();
-                resetGame();
-            }
+            checkGameOver();
         }
     }
 
@@ -88,36 +75,33 @@ public class UI {
             System.out.print("Select stone to move: ");
             in = sc.next();
             moveCheck = isValidMove();
-            if (moveCheck == -1){
+            if (moveCheck == -1) {
                 System.out.println("Invalid move. Please try again");
                 return;
-            }
-            else if (moveCheck == 0)return;
-            move.setFrom(Integer.parseInt(in)-1);
-            possibleMoves = getValidMoves(MorrisMove::getFrom, Integer.parseInt(in)-1);
+            } else if (moveCheck == 0) return;
+            move.setFrom(Integer.parseInt(in) - 1);
+            possibleMoves = getValidMoves(MorrisMove::getFrom, Integer.parseInt(in) - 1);
         }
         System.out.print("Select location to set stone: ");
         in = sc.next();
         moveCheck = isValidMove();
-        if (moveCheck == -1){
+        if (moveCheck == -1) {
             System.out.println("Invalid move. Please try again");
             return;
-        }
-        else if (moveCheck == 0)return;
-        move.setTo(Integer.parseInt(in)-1);
-        possibleMoves = getValidMoves(MorrisMove::getTo, Integer.parseInt(in)-1);
+        } else if (moveCheck == 0) return;
+        move.setTo(Integer.parseInt(in) - 1);
+        possibleMoves = getValidMoves(MorrisMove::getTo, Integer.parseInt(in) - 1);
         possibleMoves = possibleMoves.filter(k -> k.getRemove() != -1);
         if (possibleMoves.count() > 0) {
             System.out.print("Select stone to Remove: ");
             in = sc.next();
             moveCheck = isValidMove();
-            if (moveCheck == -1){
+            if (moveCheck == -1) {
                 System.out.println("Invalid move. Please try again");
                 return;
-            }
-            else if (moveCheck == 0)return;
-            move.setRemove(Integer.parseInt(in)-1);
-            possibleMoves = getValidMoves(MorrisMove::getRemove, Integer.parseInt(in)-1);
+            } else if (moveCheck == 0) return;
+            move.setRemove(Integer.parseInt(in) - 1);
+            possibleMoves = getValidMoves(MorrisMove::getRemove, Integer.parseInt(in) - 1);
         }
         if (!board.streamMoves().anyMatch(k -> k.equals(move))) valid = false;
         if (valid) {
@@ -136,6 +120,7 @@ public class UI {
     Stream<MorrisMove> getValidMoves(Function<MorrisMove, Integer> f, int input) {
         return board.streamMoves().filter(morrisMove -> f.apply(morrisMove) == input);
     }
+
     /***********************************************************************************
      *  showOptions():
      *      ->returns a String which contains the Board representation and basic user commands
@@ -147,6 +132,7 @@ public class UI {
         buffer += "\n[0: Computer move, ?: Help]";
         return buffer;
     }
+
     /***********************************************************************************
      * isValidMove():
      *      ->checks if the input (should be a number) is valid (1-24 are valid inputs)
@@ -154,74 +140,85 @@ public class UI {
      **********************************************************************************/
     public int isValidMove() {
         String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
-        String regexForOptions = "^(0|save|exit|\\?||guide)";
+        String regexForOptions = "^(0|save|exit|\\?||guide||load)";
         in = in.trim();
         int res = -1;
-        if (in.matches(regexForOptions)){
-            if (in.equals("0")){
+        if (in.matches(regexForOptions)) {
+            if (in.equals("0")) {
                 //computer move
-            }
-            else if(in.equalsIgnoreCase("save")){
+            } else if (in.equalsIgnoreCase("save")) {
                 save();
-            }
-            else if(in.equalsIgnoreCase("exit")){
+            } else if (in.equalsIgnoreCase("exit")) {
                 System.exit(0);
 
-            }
-            else if(in.equals("?")){
+            } else if (in.equals("?")) {
                 showHelp();
-            }
-            else if(in.equalsIgnoreCase("guide")){
+            } else if (in.equalsIgnoreCase("guide")) {
                 printGuide();
+            } else if (in.equalsIgnoreCase("load")) {
+                loadFile();
+            } else if (in.equalsIgnoreCase("undo")) {
+                board = (Morris) board.parent();
             }
             res = 0;
-        }
-        else if (in.matches(regex)){
+        } else if (in.matches(regex)) {
             res = 1;
         }
         return res;
     }
 
-    public void save(){
-            board.save(board,  "save.txt");
-            System.out.println("Savefilepath: " + Paths.get("save.txt").toAbsolutePath().toString());
+    public void save() {
+        String filenameMatcher = "^[\\w,\\s-]+\\.[A-Za-z]{3}$";
+        System.out.print("Please enter the file e.g. <save.txt>: ");
+        in = sc.next();
+        try {
+        if (in.matches(filenameMatcher)) board.save(board, in);
+            System.out.println("Savefilepath: " + Paths.get(in).toAbsolutePath().toString());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
-    public void askSaveGame(){
+
+    public void askSaveGame() {
         String regex = "^(y)| (n)$";
         System.out.println("\nDo you want to save the game? type: <y> / <n>");
         in = sc.next();
         in = in.toLowerCase();
-        while (!in.matches(regex)){
+        while (!in.matches(regex)) {
             System.out.println("invalid command. Please type: <y> or <n>");
             in = sc.next();
         }
-        if (in.matches("y")){
+        if (in.matches("y")) {
             save();
         }
     }
 
-    public void showHelp(){
+    public void showHelp() {
         String buffer = "\nYou can enter the following commands: \n";
-        buffer+= "<exit> : Exit the Application\n";
-        buffer+= "<save> : Saving the Game\n";
-        buffer+= "<0> : AI is making the Move for you\n";
-        buffer+= "<1-24>: Enter a number between 1 and 24 to make this move and follow the instructions afterwards\n";
-        buffer+= "<guide>: A Gameguide which helps you to understand how the game works";
+        buffer += "<exit> : Exit the Application\n";
+        buffer += "<save> : Saving the Game\n";
+        buffer += "<0> : AI is making the Move for you\n";
+        buffer += "<1-24>: Enter a number between 1 and 24 to make this move and follow the instructions afterwards\n";
+        buffer += "<guide>: A Gameguide which helps you to understand how the game works\n";
+        buffer += "<save>: saves the current game\n";
+        buffer += "<load>: loads the file 'save.txt' in the current directory\n";
         System.out.println(buffer);
     }
-    public void printGuide(){
-        String buffer ="";
-        buffer+= "Guide for Nine Mans Morris\n";
-        buffer+= "Play is in two phases. To begin with, player take turns to play a stone of their symbol on any unoccupied point until all eighteen pieces have been played\n";
-        buffer+= "After that, play continues alternately but each turn consist of moving a stone to an adjacent position\n";
-        buffer+= "If a player has less then 5 of his own stones, he is allowed to jump\n";
-        buffer+= "Jumping consists of selecting a stone and moving it to an unoccupied point\n";
-        buffer+= "Mills: a mill is formed by placing three stones in a row\n";
-        buffer+= "If a mill is completed, the player which owns the mill can remove a stone of his opponent as long as the stone is not part of a mill\n";
-        buffer+= "If all opponent stones are in a mill, these millstones can be removed aswell\n";
-        buffer+= "The player who achieves to reduce the opponent stones under 4 wins\n";
+
+    public void printGuide() {
+        String buffer = "";
+        buffer += "Guide for Nine Mans Morris\n";
+        buffer += "Play is in two phases. To begin with, player take turns to play a stone of their symbol on any unoccupied point until all eighteen pieces have been played\n";
+        buffer += "After that, play continues alternately but each turn consist of moving a stone to an adjacent position\n";
+        buffer += "If a player has less then 5 of his own stones, he is allowed to jump\n";
+        buffer += "Jumping consists of selecting a stone and moving it to an unoccupied point\n";
+        buffer += "Mills: a mill is formed by placing three stones in a row\n";
+        buffer += "If a mill is completed, the player which owns the mill can remove a stone of his opponent as long as the stone is not part of a mill\n";
+        buffer += "If all opponent stones are in a mill, these millstones can be removed aswell\n";
+        buffer += "The player who achieves to reduce the opponent stones under 4 wins\n";
         System.out.println(buffer);
     }
+
     /***********************************************************************************
      * resetGame():
      *      -> creates a Morris instance and overwrites it with the finished board
@@ -230,5 +227,41 @@ public class UI {
 
     public void resetGame() {
         board = new Morris();
+    }
+
+    public void checkGameOver() {
+        if (board.isWin()) {
+            String buffer = "";
+            if (board.isBeginnersTurn()) {
+                buffer += "O";
+            } else {
+                buffer += "X";
+            }
+            buffer += " Won!";
+            System.out.println(buffer);
+            askSaveGame();
+            resetGame();
+        }
+        if (board.isDraw()) {
+            System.out.println("The game ended in a Draw!");
+            askSaveGame();
+            resetGame();
+        }
+    }
+
+    public void loadFile() {
+        try {
+            String filenameMatcher = "^[\\w,\\s-]+\\.[A-Za-z]{3}$";
+            System.out.print("Please enter the file e.g. <save.txt>: ");
+            in = sc.next();
+            if (in.matches(filenameMatcher)){
+                board = board.load(in);
+            }
+            else {
+                System.out.println("invalid filename");
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
