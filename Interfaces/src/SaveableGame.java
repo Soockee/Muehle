@@ -19,13 +19,13 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
 
     default void saveNew(Board board, Path path) throws IOException {
         BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistoryNew()
+        out.write(board.history()
                 .map(ImmutableBoard::getMove)
                 .map(Optional::get)
                 .map(Object::toString)
-                .collect(Collectors.joining(","))
+                .collect(Collectors.joining(",","", board.isFlipped() ? "," : ""))
         );
-        if (board.isFlipped()) out.write(",f");
+        if (board.isFlipped()) out.write("f");
         out.close();
     }
 

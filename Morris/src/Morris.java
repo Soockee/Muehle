@@ -28,7 +28,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *  movesWithoutRemoving:
      *      -> to determintate an draw
      *          => 50 moves without removing is a Draw
-     *  previous:
+     *  parent:
      *      -> Parentboard of the current previous
      *          => Rootboard got no previous
      *
@@ -46,11 +46,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *****************************************************************/
 
     private final int[] board;
-    private final static int[][] zobristHash = { // 0 => player +1, 1 => player -1
-            new Random().ints(24L).toArray(),
-            new Random().ints(24L).toArray(),
-    };
-    private final int zobristHashCode = 1010;//PlaceHolder
     private final int turn;
     private final int movesWithoutRemoving; // used for detecting draws
     private final Morris parent;
@@ -75,45 +70,13 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         this.isFlipped = isFlipped;
     }
 
-    int calculateZobristHashForChild(MorrisMove morrisMove) {
-        if (morrisMove.getRemove() == -1 && morrisMove.getFrom() == 1) {
-            return zobristHashCode ^ zobristHash[turn == +1 ? 0 : 1][morrisMove.getTo()];
-        }
-        int idx = turn == +1 ? 0 : 1;
-        if (morrisMove.getFrom() == -1) {
-            return zobristHashCode ^ zobristHash[idx][morrisMove.getTo()] ^ zobristHash[idx][morrisMove.getRemove()];
-        }
-        if (morrisMove.getRemove() == -1) {
-            return zobristHashCode ^ zobristHash[idx][morrisMove.getTo()] ^ zobristHash[idx][morrisMove.getFrom()];
-        }
-        return zobristHashCode ^ zobristHash[idx][morrisMove.getTo()]
-                ^ zobristHash[idx][morrisMove.getFrom()]
-                ^ zobristHash[idx][morrisMove.getTo()];
-    }
-
-    public static void main(String[] args) {
-        System.out.println(IntStream.range(0, 10000).map(i -> Morris.playRandomly()).sum());
-    }
-
-    static int playRandomly() {
-        Random r = ThreadLocalRandom.current();
-        ImmutableBoard<MorrisMove> game = new Morris();
-        while (!game.isDraw()) {
-            List<MorrisMove> moves = game.moves();
-            MorrisMove move = moves.get(r.nextInt(moves.size()));
-            game = game.makeMove(move);
-            if (game.isWin()) return game.isBeginnersTurn() ? -1 : +1;
-        }
-        return 0;
-    }
-
     @Override
     public ImmutableBoard<MorrisMove> parent() {
         return parent;
     }
 
     @Override
-    public Optional<ImmutableBoard<MorrisMove>> makeMoveNew(MorrisMove morrisMove) {
+    public Optional<Morris> makeMoveNew(MorrisMove morrisMove) {
         if (phase == 1) return Optional.of(makeMovePhasePlace(morrisMove));
         else return Optional.of(makeMovePhaseMoveAndJump(morrisMove));
     }
@@ -128,8 +91,8 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         int[] newBoard = Arrays.copyOf(board, 24);
         newBoard[morrisMove.getTo()] = turn;
         int newMovesWithoutRemoving;
-        if (morrisMove.getRemove() != -1) {
-            newBoard[morrisMove.getRemove()] = 0;
+        if (morrisMove.getRemove().isPresent()) {
+            newBoard[morrisMove.getRemove().get()] = 0;
             newMovesWithoutRemoving = 0;
         } else {
             newMovesWithoutRemoving = movesWithoutRemoving + 1;
@@ -142,18 +105,16 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
 
     private Morris makeMovePhaseMoveAndJump(MorrisMove morrisMove) {
         int[] newBoard = Arrays.copyOf(board, 24);
-        newBoard[morrisMove.getFrom()] = 0;
+        newBoard[morrisMove.getFrom().get()] = 0; // getFrom() exists if game is not in phase 1
         newBoard[morrisMove.getTo()] = turn;
         int newMovesWithoutRemoving;
         int newPhase;
-        if (morrisMove.getRemove() != -1) {
-            newBoard[morrisMove.getRemove()] = 0;
+        if (morrisMove.getRemove().isPresent()) {
+            newBoard[morrisMove.getRemove().get()] = 0;
             newMovesWithoutRemoving = 0;
             if (phase != 1 && numberOfStones(-turn) == 4) { // phase1 stays at 1
                 if (phase == 2) newPhase = turn == 1 ? 4 : 3;
                 else newPhase = 5;
-                //else if (child.phase == 3) child.phase = child.turn == 1 ? 3 : 5; // else child.phase = 5;
-                //else if (child.phase == 4) child.phase = child.turn == 1 ? 5 : 4;
             } else newPhase = phase;
         } else {
             newPhase = phase;
@@ -169,7 +130,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     }
 
     @Override
-    public Stream<ImmutableBoard<MorrisMove>> childs() {
+    public Stream<Morris> childs() {
         return streamMoves().map(this::makeMoveNew).map(Optional::get);
     }
 
@@ -194,7 +155,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     private Stream<MorrisMove> streamMovesPhasePlace() {
         return IntStream.range(0, 24)
                 .filter(to -> board[to] == 0)
-                .mapToObj(to -> new MorrisMove(-1, to, -1))
+                .mapToObj(MorrisMove::place)
                 .map(this::streamMovesWithRemoves)
                 .flatMap(morrisMoveStream -> morrisMoveStream);
     }
@@ -218,7 +179,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 .filter(from -> board[from] == turn)
                 .mapToObj(from -> Arrays.stream(moves[from])
                         .filter(to -> board[to] == 0)
-                        .mapToObj(to -> new MorrisMove(from, to, -1))
+                        .mapToObj(to -> MorrisMove.moveOrJump(from, to))
                 )
                 .flatMap(moveStream -> moveStream)
                 .map(this::streamMovesWithRemoves)
@@ -238,7 +199,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 .filter(from -> board[from] == turn)
                 .mapToObj(from -> IntStream.range(0, 24)
                         .filter(to -> board[to] == 0)
-                        .mapToObj(to -> new MorrisMove(from, to, -1))
+                        .mapToObj(to -> MorrisMove.moveOrJump(from, to))
                 )
                 .flatMap(morrisMoveStream -> morrisMoveStream)
                 .map(this::streamMovesWithRemoves)
@@ -262,15 +223,15 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             if (openStone.length == 0) {//if all Stones are in Mills, Mills can be broken
                 return IntStream.range(0, 24)
                         .filter(pos -> board[pos] == -turn)
-                        .mapToObj(remove -> new MorrisMove(morrisMove.getFrom(), morrisMove.getTo(), remove));
+                        .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().orElse(null), morrisMove.getTo(), remove));
             }
             return Arrays.stream(openStone)
-                    .mapToObj(i -> new MorrisMove(morrisMove.getFrom(), morrisMove.getTo(), i));
+                    .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().orElse(null), morrisMove.getTo(), remove));
         }
         return Stream.of(morrisMove);
     }
 
-    long numberOfClosedPotentialMills(MorrisMove move) {
+    private long numberOfClosedPotentialMills(MorrisMove move) {
         final int[][][] mills = {
                 {{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
@@ -302,7 +263,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
 
         return Arrays.stream(mills[move.getTo()])
                 .map(ints -> Arrays.stream(ints)
-                        .map(i -> i == move.getFrom() ? 0 : board[i])
+                        .map(i -> i == move.getFrom().orElse(-1) ? 0 : board[i])
                         .filter(i -> i == turn)
                         .count()
                 )
@@ -314,7 +275,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *
      *****************************************************************/
-    IntStream findOpenStones(int player) { // player being the encoding for the players stones on the board, +1 or -1
+    private IntStream findOpenStones(int player) { // player being the encoding for the players stones on the board, +1 or -1
         final int[][][] mills = {
                 {{1, 2,}, {6, 7}},
                 {{0, 2}, {9, 17}},
@@ -367,7 +328,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     @Override
     public Optional<MorrisMove> getMove() {
         if (parent == null) return Optional.empty();
-        return Optional.of(new MorrisMove(
+        return Optional.of(MorrisMove.moveOrJumpAndRemove(
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == -turn)
                         .filter(i -> board[i] == 0)
@@ -392,7 +353,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *****************************************************************/
     @Override
-    public Stream<ImmutableBoard<MorrisMove>> getHistoryNew() {
+    public Stream<Morris> history() {
         Morris[] historyReversed =
                 Stream.iterate(this, morris -> morris.parent() != null, morris -> morris.parent)
                         .toArray(Morris[]::new);
@@ -495,8 +456,8 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     @Override
     public Morris load(Path path) throws IOException {
         Morris load = new Morris();
-        final Pattern format = Pattern.compile("(?:\\d, )* (?:,(f))");
         LinkedList<String> moveParts = Files.lines(path, StandardCharsets.UTF_8)
+                .filter(s -> !s.isEmpty())
                 .map(s -> s.split(","))
                 .map(Arrays::stream)
                 .flatMap(stringStream -> stringStream)
@@ -507,35 +468,15 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             load.flip();
         }
         for (String movePart : moveParts) {
-            List<Integer> lst = Stream.of(movePart)
-                    .map(s -> s.split("-"))
-                    .map(Arrays::stream)
-                    .flatMap(stringStream -> stringStream)
-                    .map(String::trim)
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList());
-            switch (lst.size()) {
-                case 3:
-                    load = (Morris) load.makeMove(new MorrisMove(lst.get(0), lst.get(1), lst.get(2)));
-                    break;
-                case 2:
-                    load = (Morris) load.makeMove(load.phase == 1 ?
-                            new MorrisMove(-1, lst.get(0), lst.get(1)) :
-                            new MorrisMove(lst.get(0), lst.get(1), -1));
-                    break;
-                default:
-                    load = (Morris) load.makeMove(new MorrisMove(-1, lst.get(0), -1));
-                    break;
-            }
+            MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1).orElseThrow(() -> new IOException("File was corrupted"));
+            if(!load.isValidMove(move)) throw new IOException("File contains illegal Moves");
+            load = load.makeMoveNew(move).get();
         }
         return load;
     }
 
-    boolean isValidMove(MorrisMove move) {
-        return move.getRemove() >= -1 && move.getRemove() < 24 &&
-                move.getTo()    >=  0 && move.getTo()     < 24 &&
-                move.getFrom()  >= -1 && move.getFrom()   < 24 &&
-                streamMoves().anyMatch(morrisMove -> morrisMove.equals(move));
+    private boolean isValidMove(MorrisMove move) {
+        return streamMoves().anyMatch(morrisMove -> morrisMove.equals(move));
     }
 
     @Override
@@ -564,19 +505,18 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         );
     }
 
-    int getID() {
+    private int getID() {
         return Arrays.hashCode(board) * turn;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Morris && getGroup()
-                //.mapToInt(Morris::getID)
-                //.anyMatch(i -> i == ((Morris) obj).getID());
-                .anyMatch(morris -> morris.turn == ((Morris) obj).turn && Arrays.equals(morris.board, ((Morris) obj).board));
+        return obj instanceof Morris &&
+                turn == ((Morris) obj).turn &&
+                getGroup().anyMatch(morris -> Arrays.equals(morris.board, ((Morris) obj).board));
     }
 
-    Morris mirror() {
+    private Morris mirror() {
         final int[] newBoardOrder = {2, 1, 0, 7, 6, 5, 4, 3, 10, 9, 8, 15, 14, 13, 12, 11, 18, 17, 16, 23, 22, 21, 20, 19};
         int[] newBoard = Arrays.stream(newBoardOrder)
                 .map(i -> board[i])
@@ -584,7 +524,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         return new Morris(newBoard, turn, movesWithoutRemoving, parent, phase, isFlipped);
     }
 
-    Morris rotate() {
+    private Morris rotate() {
         final int[] newBoardOrder = {6, 7, 0, 1, 2, 3, 4, 5, 14, 15, 8, 9, 10, 11, 12, 13, 22, 23, 16, 17, 18, 19, 20, 21};
         int[] newBoard = Arrays.stream(newBoardOrder)
                 .map(i -> board[i])
@@ -592,7 +532,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
         return new Morris(newBoard, turn, movesWithoutRemoving, parent, phase, isFlipped);
     }
 
-    Morris swapInnerAndOuterRing() {
+    private Morris swapInnerAndOuterRing() {
         final int[] newBoardOrder = {16, 17, 18, 19, 20, 21, 22, 23, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7};
         int[] newBoard = Arrays.stream(newBoardOrder)
                 .map(i -> board[i])
