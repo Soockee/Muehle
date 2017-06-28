@@ -12,14 +12,14 @@ import java.util.stream.IntStream;
 public class Ai {
 
     private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private HashMap<Integer, ImmutableBoard> bestMoves = new HashMap<>();
+    private ImmutableBoard bestMove=null;
 
     public void evaluateBestBoard(ImmutableBoard board, int depth) {
         IntStream
                 .range(0, depth)
                 .parallel()
                 .forEach(i -> {
-                    bestMoves.put(i,iterativeDepthSearch(board,i));
+                    bestMove=iterativeDepthSearch(board,i);
                 });
     }//evaluateBestBoard
 
@@ -131,7 +131,7 @@ public class Ai {
         return val[2] - val[0];
     }//evaluateBoard
 
-    public HashMap<Integer, ImmutableBoard> getBestMoves(){
-        return bestMoves;
+    public ImmutableBoard getBestMove(){
+        return bestMove;
     }
 }//class
