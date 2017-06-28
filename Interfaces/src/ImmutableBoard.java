@@ -14,14 +14,14 @@ public interface ImmutableBoard<Move> {
      * https://moodle.thm.de/pluginfile.php/333961/mod_resource/content/1/Notizen.Woche12.html
      */
 
-    default Optional<ImmutableBoard<Move>> makeMoveNew(Move move) {// may be changed to Optional later
+    default Optional<? extends ImmutableBoard<Move>> makeMoveNew(Move move) {// may be changed to Optional later
         return childs()
                 .filter(board -> board.getMove().equals(move))
                 .findAny();
     }
 
-    default Optional<ImmutableBoard<Move>> makeMoveNew(Move... moves) {
-        Optional<ImmutableBoard<Move>> res = Optional.of(this);
+    default Optional<? extends ImmutableBoard<Move>> makeMoveNew(Move... moves) {
+        Optional<? extends ImmutableBoard<Move>> res = Optional.of(this);
         for (Move move : moves) {
             if(!res.isPresent()) return Optional.empty();
             else res = res.get().makeMoveNew(move);
@@ -33,9 +33,9 @@ public interface ImmutableBoard<Move> {
 
     ImmutableBoard<Move> parent(); // returns parent board, one Move behind
 
-    Stream<ImmutableBoard<Move>> childs(); //target boards
+    Stream<? extends ImmutableBoard<Move>> childs(); //target boards
 
-    Stream<ImmutableBoard<Move>> history(); //ordered from beginning to most recent Move
+    Stream<? extends ImmutableBoard<Move>> history(); //ordered from beginning to most recent Move
 
     /*
      * old interface below

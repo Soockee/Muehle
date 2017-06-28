@@ -23,14 +23,6 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     private final T3 parent;
     private final boolean isFlipped;
 
-    public static void main(String[] args) {
-        T3 board = new T3();
-        board = (T3) board.flip();
-        System.out.println(board.getHistory());
-        System.out.println(board);
-        System.out.println(board.isFlipped);
-    }
-
     private T3(int[] board, int turn, T3 parent, boolean isFlipped) { // full constructor
         this.board = board;
         this.turn = turn;
@@ -46,7 +38,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public Optional<ImmutableBoard<Integer>> makeMoveNew(Integer move) {
+    public Optional<T3> makeMoveNew(Integer move) {
         int[] newBoard = Arrays.copyOf(this.board, 9);
         newBoard[move] = turn;
         return Optional.of(new T3(newBoard, -turn, this, isFlipped));
@@ -69,7 +61,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public Stream<ImmutableBoard<Integer>> history() {
+    public Stream<T3> history() {
         T3[] historyReversed = Stream.iterate(this, t3 -> t3.parent() != null, t3 -> t3.parent)
                 .toArray(T3[]::new);
         return IntStream.rangeClosed(1, historyReversed.length)
@@ -119,10 +111,11 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         return isFlipped;
     }
 
-    public Stream<ImmutableBoard<Integer>> childs() {
+    public Stream<T3> childs() {
         return IntStream.range(0, 9)
                 .filter(pos -> board[pos] == 0)
-                .mapToObj(this::makeMove);
+                .mapToObj(this::makeMoveNew)
+                .map(Optional::get);
     }
 
     @Override
@@ -152,7 +145,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public T3 load(String name)throws IOException  {
+    public T3 load(String name) throws IOException {
         return load(Paths.get(name));
     }
 
@@ -164,7 +157,6 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     @Override
     public T3 load(Path path) throws IOException {
         T3 load = new T3();
-        Pattern format = Pattern.compile("()");
         LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
                 .map(s -> s.split(","))
                 .flatMap(Arrays::stream)
@@ -178,14 +170,14 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
                 .map(Integer::parseInt)
                 .collect(Collectors.toList())) {
             if (load.isValidMove(pos)) {
-                load = (T3) load.makeMove(pos);
+                load = load.makeMoveNew(pos).get();
             } else throw new IOException("File contains invalid Moves");
         }
         return load;
     }
 
-    boolean isValidMove(Integer pos) {
-        return pos > 0 && pos < 8 && streamMoves().anyMatch(i -> i == pos);
+    private boolean isValidMove(Integer pos) {
+        return streamMoves().anyMatch(i -> i == pos);
     }
 
     @Override
@@ -198,11 +190,11 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         return getGroup().mapToInt(T3::getID).reduce((i1, i2) -> i1 ^ i2).getAsInt();
     }
 
-    int getID() {
+    private int getID() {
         return Arrays.hashCode(board);
     }
 
-    Stream<T3> getGroup() {
+    private Stream<T3> getGroup() {
         return Stream.of(
                 this,
                 rotate(),
@@ -215,7 +207,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         );
     }
 
-    T3 rotate() {// 90Degrees left
+    private T3 rotate() {// 90Degrees left
         final int[] pattern = {
                 2, 5, 8, 1, 4, 7, 0, 3, 6
         };
@@ -223,7 +215,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         return new T3(newBoard, turn, parent, isFlipped);
     }
 
-    T3 mirrorTopDown() {
+    private T3 mirrorTopDown() {
         final int[] pattern = {
                 2, 1, 0, 5, 4, 3, 8, 7, 6
         };
