@@ -13,7 +13,8 @@ public class MorrisMove {
     private Integer remove;
 
     public static Optional<MorrisMove> parseMove(String input, boolean isPhase1) {
-        if(!input.matches("\\s*(?:(\\d{1,2})\\s*-)?\\s*(\\d{1,2})\\s*(?:-\\s*(\\d{1,2}))?\\s*")) return Optional.empty();
+        if (!input.matches("\\s*(?:(\\d{1,2})\\s*-)?\\s*(\\d{1,2})\\s*(?:-\\s*(\\d{1,2}))?\\s*"))
+            return Optional.empty();
         List<Integer> parts = Arrays.stream(input.split("-"))
                 .map(String::trim)
                 .map(Integer::parseInt)
@@ -79,7 +80,9 @@ public class MorrisMove {
 
     @Override
     public String toString() {
-        return (getFrom().isPresent() ? from + "-" : "") + to + (getRemove().isPresent() ? "-" + remove : "");
+        return (getFrom().isPresent() ? String.format("%02d", from) + "-" : "")
+                + String.format("%02d", to)
+                + (getRemove().isPresent() ? "-" + String.format("%02d", remove) : "");
     }
 }
 

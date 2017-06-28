@@ -7,26 +7,37 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 /**
- *Created by Paul Krappatsch on 14.06.2017.
+ * Created by Paul Krappatsch on 14.06.2017.
  */
 
-public interface SaveableGame<Board extends StreamBoard<?>> {
+public interface SaveableGame<SaveableBoard> {
 
-    default void save(Board board, String name) throws IOException {
+    void save(SaveableBoard board, String name) throws IOException;
+
+    void save(SaveableBoard board, Path path) throws IOException;
+
+    SaveableBoard load(String name) throws IOException;
+
+    SaveableBoard load(Path path) throws IOException;
+
+/*default void save(S board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
-    default void save(Board board, Path path) throws IOException {
+    default void save(S board, Path path) throws IOException {
         BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.history().stream()
+        out.write(board.getHistory() .stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",","", board.isFlipped() ? "," : ""))
+                .collect(Collectors.joining(","))
         );
-        if (board.isFlipped()) out.write("f");
+        if (board.isFlipped()) {
+            out.write(",f");
+        }
+        out.write("\n");
         out.close();
     }
 
-    Board load(String name) throws IOException;
+    SaveableBoard load(String name) throws IOException;
 
-    Board load(Path path) throws IOException;
+    SaveableBoard load(Path path) throws IOException;*/
 }

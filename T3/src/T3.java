@@ -1,4 +1,5 @@
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -56,6 +57,16 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return IntStream.range(0, 9).filter(i -> board[i] == 0);
     }
 
+    @Override
+    public List<Integer> getHistory() {
+        List<Integer> moves = Stream.iterate(this, t3 -> t3.parent != null, t3->  t3.parent)
+                .map(T3::getMove)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        return IntStream.rangeClosed(1, moves.size()).mapToObj(operand -> moves.get(moves.size() - operand))
+                .collect(Collectors.toList());
+    }
+
     /*@Override
     public List<Integer> history() {
         return Stream.iterate(this, board ->  board.parent() != null, t3 -> (T3) t3.parent())
@@ -63,7 +74,8 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }//ordered from beginning to most recent Move
-    */
+
+   */
 
     @Override
     public boolean isWin() {
@@ -120,13 +132,30 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     @Override
     public String toString() {
         char[] repr = isFlipped ? new char[]{'X', '.', 'O'} : new char[]{'O', '.', 'X'};
-        return IntStream.range(0, 3)
+        return IntStream.range(0, 3) // rows
                 .mapToObj(row -> IntStream.rangeClosed(row * 3, row * 3 + 2)
                         .map(n -> board[n])
                         .map(n -> repr[n + 1])
                         .mapToObj(n -> Character.toString((char) n))
                         .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
+    }
+
+     public void save(T3 board, String name) throws IOException {
+        save(board, Paths.get(name));
+    }
+
+     public void save(T3 board, Path path) throws IOException {
+        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+        out.write(board.getHistory() .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","))
+        );
+        if (board.isFlipped()) {
+            out.write(",f");
+        }
+        out.write("\n");
+        out.close();
     }
 
     @Override
@@ -162,7 +191,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     }
 
     private boolean isValidMove(Integer pos) {
-        return streamMoves().anyMatch(i -> i == pos);
+        return streamMoves().anyMatch(move -> move == pos);
     }
 
     @Override

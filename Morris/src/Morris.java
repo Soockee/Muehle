@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -42,6 +43,32 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *      -> determinate the colors of the Stones for the toString() method
      *
      *****************************************************************/
+    public static void main(String[] args) {
+        Morris b = new Morris();
+
+        b = b.makeMove(MorrisMove.place(0)).get();
+
+        b = b.makeMove(MorrisMove.place(5)).get();
+
+        b = b.makeMove(MorrisMove.place(1)).get();
+
+        b = b.makeMove(MorrisMove.place(6)).get();
+
+        b = b.makeMove(MorrisMove.place(2)).get();
+
+        try{
+
+            b.save(b, "saveTwo.txt");
+
+        }
+
+        catch(IOException e){
+
+            System.out.println(e.getMessage());
+
+        }
+    }
+
 
     private final int[] board;
     private final int turn;
@@ -76,7 +103,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
     @Override
     public Optional<Morris> makeMove(MorrisMove move) {// may be changed to Optional later
         return children()
-                .filter(board -> board.getMove().equals(move))
+                .filter(board -> board.getMove().get().equals(move))
                 .findAny();
     }
 
@@ -96,9 +123,19 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
             newMovesWithoutRemoving = movesWithoutRemoving + 1;
         }
         int newPhase;
-        if (history().size() == 17) newPhase = 2;
+        if (getHistory().size() == 17) newPhase = 2;
         else newPhase = 1;
         return new Morris(newBoard, -turn, newMovesWithoutRemoving, this, newPhase, isFlipped);
+    }
+
+    @Override
+    public List<MorrisMove> getHistory() {
+        List<MorrisMove> moves = Stream.iterate(this, morris -> morris.parent != null, m -> m.parent)
+                .map(Morris::getMove)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        return IntStream.rangeClosed(1, moves.size()).mapToObj(operand -> moves.get(moves.size() - operand))
+                .collect(Collectors.toList());
     }
 
     private Morris makeMovePhaseMoveAndJump(MorrisMove morrisMove) {
@@ -332,7 +369,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
                         .filter(i -> parent.board[i] == 0)
                         .filter(i -> board[i] == -turn)
                         .findAny()
-                        .getAsInt(),
+                        .getAsInt(), // can´t be null
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == turn)
                         .filter(i -> board[i] == 0)
@@ -358,6 +395,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *      -> creates a textual representation of the Morrisboard
      *
      *****************************************************************/
+
     @Override
     public String toString() {
         final int[][] display = {
@@ -379,7 +417,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
                 .map(n -> repr[n + 1])
                 .mapToObj(n -> Character.toString((char) n))
                 .collect(Collectors.joining("  ")) //1-3 Felder Abstand
-        ).collect(Collectors.joining("\n", "\n", "")); // prefix "\n" für jShell
+        ).collect(Collectors.joining("\n", "\n", "\n")); // prefix "\n" für jShell
     }
 
     /******************************************************************
@@ -393,6 +431,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *     the opponent wins when the return value is true
      *
      *****************************************************************/
+
     @Override
     public boolean isWin() { //return true after winning game, player -turn wins
         return phase != 1 && (streamMoves().count() == 0 ||
@@ -437,6 +476,23 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *
      *
      *****************************************************************/
+    public void save(Morris board, String name) throws IOException {
+        save(board, Paths.get(name));
+    }
+
+    public void save(Morris board, Path path) throws IOException {
+        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+        out.write(board.getHistory().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","))
+        );
+        if (board.isFlipped()) {
+            out.write(",f");
+        }
+        out.write("\n");
+        out.close();
+    }
+
     @Override
     public Morris load(String name) throws IOException {
         return load(Paths.get(name));
@@ -459,7 +515,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
         for (String movePart : moveParts) {
             MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1)
                     .orElseThrow(() -> new IOException("File is in invalid Format"));
-            if(!load.isValidMove(move)) throw new IOException("File contains illegal Moves");
+            if (!load.isValidMove(move)) throw new IOException("File contains illegal Moves");
             load = load.makeMoveIntern(move);
         }
         return load;
