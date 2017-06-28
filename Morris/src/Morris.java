@@ -539,4 +539,8 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 .toArray();
         return new Morris(newBoard, turn, movesWithoutRemoving, parent, phase, isFlipped);
     }
+
+    public int getPhase(){
+        return phase;
+    }
 }
