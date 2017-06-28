@@ -5,8 +5,10 @@
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UI {
@@ -71,7 +73,7 @@ public class UI {
         MorrisMove move = new MorrisMove();
         Stream<MorrisMove> possibleMoves;
         int moveCheck = -1;
-        if (board.streamMoves().filter(k -> k.getFrom() != -1).count() > 0) {
+        if (board.streamMoves().filter(k -> k.getFrom().isPresent()).count() > 0) {
             System.out.print("Select stone to move: ");
             in = sc.next();
             moveCheck = isValidMove();
@@ -80,7 +82,7 @@ public class UI {
                 return;
             } else if (moveCheck == 0) return;
             move.setFrom(Integer.parseInt(in) - 1);
-            possibleMoves = getValidMoves(MorrisMove::getFrom, Integer.parseInt(in) - 1);
+            possibleMoves = getValidMoves(Integer.parseInt(in) - 1,1);
         }
         System.out.print("Select location to set stone: ");
         in = sc.next();
@@ -90,8 +92,8 @@ public class UI {
             return;
         } else if (moveCheck == 0) return;
         move.setTo(Integer.parseInt(in) - 1);
-        possibleMoves = getValidMoves(MorrisMove::getTo, Integer.parseInt(in) - 1);
-        possibleMoves = possibleMoves.filter(k -> k.getRemove() != -1);
+        possibleMoves = getValidMoves( Integer.parseInt(in) - 1,2);
+        possibleMoves = possibleMoves.filter(k -> k.getRemove().isPresent());
         if (possibleMoves.count() > 0) {
             System.out.print("Select stone to Remove: ");
             in = sc.next();
@@ -101,7 +103,7 @@ public class UI {
                 return;
             } else if (moveCheck == 0) return;
             move.setRemove(Integer.parseInt(in) - 1);
-            possibleMoves = getValidMoves(MorrisMove::getRemove, Integer.parseInt(in) - 1);
+            possibleMoves = getValidMoves(Integer.parseInt(in) - 1,3);
         }
         if (!board.streamMoves().anyMatch(k -> k.equals(move))) valid = false;
         if (valid) {
@@ -117,8 +119,16 @@ public class UI {
      *      -> the function determinates the filter (getTo, getFrom, getRemove)
      *
      **********************************************************************************/
-    Stream<MorrisMove> getValidMoves(Function<MorrisMove, Integer> f, int input) {
-        return board.streamMoves().filter(morrisMove -> f.apply(morrisMove) == input);
+    Stream<MorrisMove> getValidMoves(int input, int check){
+        if (check == 1){
+            return board.streamMoves().filter(morrisMove -> morrisMove.getFrom().get() == input);
+        }
+        else if (check == 2){
+            return board.streamMoves().filter(morrisMove -> morrisMove.getTo() == input);
+        }
+        else{
+            return board.streamMoves().filter(morrisMove -> morrisMove.getRemove().get() == input);
+        }
     }
 
     /***********************************************************************************
