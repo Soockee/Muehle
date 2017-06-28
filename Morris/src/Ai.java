@@ -9,10 +9,10 @@ import java.util.stream.IntStream;
  */
 public class Ai {
 
-    private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private ImmutableBoard bestMove=null;
+    private ConcurrentHashMap<StreamBoard, TableEntry> ttable = new ConcurrentHashMap<>();
+    private StreamBoard bestMove=null;
 
-    public void evaluateBestBoard(ImmutableBoard board, int depth) {
+    public void evaluateBestBoard(StreamBoard board, int depth) {
         IntStream
                 .range(0, depth)
                 .parallel()
@@ -21,12 +21,12 @@ public class Ai {
                 });
     }//evaluateBestBoard
 
-    public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth)  {
-        ImmutableBoard bestBoard = null;
+    public StreamBoard iterativeDepthSearch(StreamBoard board, int depth)  {
+        StreamBoard bestBoard = null;
         try {
-            bestBoard = (ImmutableBoard) board
+            bestBoard = (StreamBoard) board
                     .childs()
-                    .max(Comparator.comparingInt(item -> -alphaBeta((ImmutableBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
+                    .max(Comparator.comparingInt(item -> -alphaBeta((StreamBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
                     .orElseThrow(Error::new);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -34,7 +34,7 @@ public class Ai {
         return bestBoard;
     }//iterativeDepthSearch
 
-    public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
+    public int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
 
 
@@ -69,8 +69,8 @@ public class Ai {
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<ImmutableBoard> listOfMoves = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
-        for (ImmutableBoard entry : listOfMoves) {
+        List<StreamBoard> listOfMoves = (List<StreamBoard>) board.childs().collect(Collectors.toList());
+        for (StreamBoard entry : listOfMoves) {
             board = entry;
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
             board = board.parent();
@@ -93,13 +93,13 @@ public class Ai {
         return bestVal;
     }//alphaBeta
 
-    public int playRandomly(ImmutableBoard board, boolean turn) {
+    public int playRandomly(StreamBoard board, boolean turn) {
         if (board.isWin()) {
             return (board.isBeginnersTurn() == turn) ? 1 : -1;
         }
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-            List<ImmutableBoard> container = (List<ImmutableBoard>) board.childs().collect(Collectors.toList());
+            List<StreamBoard> container = (List<StreamBoard>) board.childs().collect(Collectors.toList());
             board = container.get(r.nextInt(container.size()));
             if (board.isWin()) {
                 return (board.isBeginnersTurn() == turn) ? 1 : -1;
@@ -108,7 +108,7 @@ public class Ai {
         return 0;
     }//playRandomly
 
-    public int[] simulatePlays(ImmutableBoard board, int number) {
+    public int[] simulatePlays(StreamBoard board, int number) {
         return IntStream
                 .range(0, number)
                 .parallel()
@@ -124,12 +124,12 @@ public class Ai {
                 );
     }//simulatePlays
 
-    public int evaluateBoard(ImmutableBoard board) {
+    public int evaluateBoard(StreamBoard board) {
         int[] val = simulatePlays(board, 10);
         return val[2] - val[0];
     }//evaluateBoard
 
-    public ImmutableBoard getBestMove(){
+    public StreamBoard getBestMove(){
         return bestMove;
     }
 }//class

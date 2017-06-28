@@ -4,8 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -14,7 +12,7 @@ import java.util.stream.Stream;
  * Created by Paul Krappatsch on 11.06.2017.
  */
 
-public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> {
+public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
 
     /******************************************************************
      * Fields:
@@ -71,18 +69,18 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     }
 
     @Override
-    public ImmutableBoard<MorrisMove> parent() {
+    public StreamBoard<MorrisMove> parent() {
         return parent;
     }
 
     @Override
-    public Optional<Morris> makeMoveNew(MorrisMove morrisMove) {
-        if (phase == 1) return Optional.of(makeMovePhasePlace(morrisMove));
-        else return Optional.of(makeMovePhaseMoveAndJump(morrisMove));
+    public Optional<Morris> makeMove(MorrisMove move) {// may be changed to Optional later
+        return children()
+                .filter(board -> board.getMove().equals(move))
+                .findAny();
     }
 
-    @Override
-    public ImmutableBoard<MorrisMove> makeMove(MorrisMove morrisMove) {
+    public Morris makeMoveIntern(MorrisMove morrisMove) {
         if (phase == 1) return makeMovePhasePlace(morrisMove);
         else return makeMovePhaseMoveAndJump(morrisMove);
     }
@@ -98,7 +96,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             newMovesWithoutRemoving = movesWithoutRemoving + 1;
         }
         int newPhase;
-        if (getHistory().size() == 17) newPhase = 2;
+        if (history().size() == 17) newPhase = 2;
         else newPhase = 1;
         return new Morris(newBoard, -turn, newMovesWithoutRemoving, this, newPhase, isFlipped);
     }
@@ -131,12 +129,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
 
     @Override
     public Stream<Morris> children() {
-        return streamMoves().map(this::makeMoveNew).map(Optional::get);
-    }
-
-    @Override
-    public List<MorrisMove> moves() {
-        return streamMoves().collect(Collectors.toList());
+        return streamMoves().map(this::makeMoveIntern);
     }
 
     /******************************************************************
@@ -332,18 +325,20 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == -turn)
                         .filter(i -> board[i] == 0)
+                        .boxed()
                         .findAny()
-                        .orElse(-1),
+                        .orElse(null),
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == 0)
                         .filter(i -> board[i] == -turn)
                         .findAny()
-                        .orElseThrow(() -> new IllegalArgumentException("no MorrisMove possible")),
+                        .getAsInt(),
                 IntStream.range(0, 24)
                         .filter(i -> parent.board[i] == turn)
                         .filter(i -> board[i] == 0)
+                        .boxed()
                         .findAny()
-                        .orElse(-1)
+                        .orElse(null)
         ));
     }
 
@@ -352,22 +347,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *      -> returns a List, which contains the MorrisMoves used to create the current board
      *
      *****************************************************************/
-    @Override
-    public Stream<Morris> history() {
-        Morris[] historyReversed =
-                Stream.iterate(this, morris -> morris.parent() != null, morris -> morris.parent)
-                        .toArray(Morris[]::new);
-        return IntStream.rangeClosed(1, historyReversed.length)
-                .mapToObj(i -> historyReversed[historyReversed.length - i]);
-    }
-
-    @Override
-    public List<MorrisMove> getHistory() {
-        return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
-                .map(Morris::getMove)
-                .map(Optional::get)
-                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-    }
 
     @Override
     public boolean isBeginnersTurn() {
@@ -439,9 +418,20 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *****************************************************************/
     @Override
-    public ImmutableBoard<MorrisMove> flip() {
+    public StreamBoard<MorrisMove> flip() {
         return new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, !isFlipped);
     }
+
+    /*@Override
+    public List<MorrisMove> history() {
+        List<Integer> revHistory =  Stream.iterate(this, board -> board.parent() != null, StreamBoard::parent)
+                .map(StreamBoard::getMove)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        return IntStream.rangeClosed(1, revHistory.size())
+                .mapToObj(value -> revHistory.get(revHistory.size()-value))
+                .collect(Collectors.toList());
+    }//ordered from beginning to most recent Move
 
     /******************************************************************
      *
@@ -470,7 +460,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1)
                     .orElseThrow(() -> new IOException("File is in invalid Format"));
             if(!load.isValidMove(move)) throw new IOException("File contains illegal Moves");
-            load = load.makeMoveNew(move).get();
+            load = load.makeMoveIntern(move);
         }
         return load;
     }
@@ -513,6 +503,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     public boolean equals(Object obj) {
         return obj instanceof Morris &&
                 turn == ((Morris) obj).turn &&
+                phase == ((Morris) obj).phase &&
                 getGroup().anyMatch(morris -> Arrays.equals(morris.board, ((Morris) obj).board));
     }
 

@@ -4,30 +4,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Created by Paul Krappatsch on 14.06.2017.
+ *Created by Paul Krappatsch on 14.06.2017.
  */
 
-public interface SaveableGame<Board extends ImmutableBoard<?>> {
-
-    default void saveNew(Board board, String name) throws IOException {
-        saveNew(board, Paths.get(name));
-    }
-
-    default void saveNew(Board board, Path path) throws IOException {
-        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.history()
-                .map(ImmutableBoard::getMove)
-                .map(Optional::get)
-                .map(Object::toString)
-                .collect(Collectors.joining(",","", board.isFlipped() ? "," : ""))
-        );
-        if (board.isFlipped()) out.write("f");
-        out.close();
-    }
+public interface SaveableGame<Board extends StreamBoard<?>> {
 
     default void save(Board board, String name) throws IOException {
         save(board, Paths.get(name));
@@ -35,14 +18,13 @@ public interface SaveableGame<Board extends ImmutableBoard<?>> {
 
     default void save(Board board, Path path) throws IOException {
         BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory().stream()
+        out.write(board.history().stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(","))
+                .collect(Collectors.joining(",","", board.isFlipped() ? "," : ""))
         );
-        if (board.isFlipped()) out.write(",f");
+        if (board.isFlipped()) out.write("f");
         out.close();
     }
-
 
     Board load(String name) throws IOException;
 
