@@ -9,8 +9,13 @@ import java.util.stream.IntStream;
  */
 public class Ai {
 
-    private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private ImmutableBoard bestMove=null;
+    private ConcurrentHashMap<ImmutableBoard, TableEntry> ttable ;
+    private ImmutableBoard bestMove;
+
+    public Ai(){
+        ttable=new ConcurrentHashMap<>();
+        bestMove=null;
+    }
 
     public void evaluateBestBoard(ImmutableBoard board, int depth) {
         IntStream
@@ -21,20 +26,21 @@ public class Ai {
                 });
     }//evaluateBestBoard
 
-    public ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth)  {
+    private ImmutableBoard iterativeDepthSearch(ImmutableBoard board, int depth)  {
         ImmutableBoard bestBoard = null;
+        ttable=new ConcurrentHashMap<>();
         try {
             bestBoard = (ImmutableBoard) board
                     .childs()
                     .max(Comparator.comparingInt(item -> -alphaBeta((ImmutableBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
-                    .orElseThrow(Error::new);
+                    .get();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
         return bestBoard;
     }//iterativeDepthSearch
 
-    public int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
+    private int alphaBeta(ImmutableBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
 
 
@@ -56,7 +62,7 @@ public class Ai {
 
         //Evaluierung der Blätter,
         if (board.isWin()) {
-            int val = -1000 + board.getHistory().size();
+            int val = -1000 + depth;
             return val;
         }//Gewinnfall
         if (board.isDraw()) {
@@ -93,7 +99,7 @@ public class Ai {
         return bestVal;
     }//alphaBeta
 
-    public int playRandomly(ImmutableBoard board, boolean turn) {
+    private int playRandomly(ImmutableBoard board, boolean turn) {
         if (board.isWin()) {
             return (board.isBeginnersTurn() == turn) ? 1 : -1;
         }
@@ -108,7 +114,7 @@ public class Ai {
         return 0;
     }//playRandomly
 
-    public int[] simulatePlays(ImmutableBoard board, int number) {
+    private int[] simulatePlays(ImmutableBoard board, int number) {
         return IntStream
                 .range(0, number)
                 .parallel()
@@ -124,7 +130,7 @@ public class Ai {
                 );
     }//simulatePlays
 
-    public int evaluateBoard(ImmutableBoard board) {
+    private int evaluateBoard(ImmutableBoard board) {
         int[] val = simulatePlays(board, 10);
         return val[2] - val[0];
     }//evaluateBoard
