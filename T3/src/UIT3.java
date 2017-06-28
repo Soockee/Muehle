@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
@@ -46,7 +47,7 @@ public class UIT3 {
     private boolean handleInput(){
         boolean success;
         String regexMove = "^([1-9])$";
-        String regexForOptions = "^(0|save|exit|\\?||guide)";
+        String regexForOptions = "^(0|save|exit|\\?||guide||load)";
         in = sc.next();
         if (in.matches(regexMove)){
             int move = Integer.parseInt(in);
@@ -102,8 +103,13 @@ public class UIT3 {
         System.out.println(buffer);
     }
     public void save(){
-        //board.save(board,  "save.txt");
-        System.out.println("Savefilepath: " + Paths.get("save.txt").toAbsolutePath().toString());
+        try{
+            board.save(board,  "save.txt");
+            System.out.println("Savefilepath: " + Paths.get("save.txt").toAbsolutePath().toString());
+        }
+        catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
     public void printGuide(){
         String buffer ="";
