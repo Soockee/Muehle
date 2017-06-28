@@ -56,7 +56,7 @@ public class Ai {
 
         //Evaluierung der Blätter,
         if (board.isWin()) {
-            int val = -1000 + board.getHistory().size();
+            int val = -1000 + depth;
             return val;
         }//Gewinnfall
         if (board.isDraw()) {
