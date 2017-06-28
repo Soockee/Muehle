@@ -1,3 +1,5 @@
+package ex;
+
 /**
  * Created by Björn Franke on 28.06.2017.
  */

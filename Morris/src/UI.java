@@ -6,9 +6,6 @@
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UI {
@@ -70,49 +67,108 @@ public class UI {
      **************************************************/
     public void checkInput() {
         boolean valid = true;
-        MorrisMove move = new MorrisMove();
-        Stream<MorrisMove> possibleMoves;
-        int moveCheck = -1;
-        if (board.streamMoves().filter(k -> k.getFrom().isPresent()).count() > 0) {
-            System.out.print("Select stone to move: ");
-            in = sc.next();
-            moveCheck = isValidMove();
-            if (moveCheck == -1) {
-                System.out.println("Invalid move. Please try again");
-                return;
-            } else if (moveCheck == 0) return;
-            move.setFrom(Integer.parseInt(in) - 1);
-            possibleMoves = getValidMoves(Integer.parseInt(in) - 1,1);
+        int phase = board.getPhase();
+        if (phase ==1){
+            valid = movePhaseOne();
         }
-        System.out.print("Select location to set stone: ");
-        in = sc.next();
-        moveCheck = isValidMove();
-        if (moveCheck == -1) {
-            System.out.println("Invalid move. Please try again");
-            return;
-        } else if (moveCheck == 0) return;
-        move.setTo(Integer.parseInt(in) - 1);
-        possibleMoves = getValidMoves( Integer.parseInt(in) - 1,2);
-        possibleMoves = possibleMoves.filter(k -> k.getRemove().isPresent());
-        if (possibleMoves.count() > 0) {
-            System.out.print("Select stone to Remove: ");
-            in = sc.next();
-            moveCheck = isValidMove();
-            if (moveCheck == -1) {
-                System.out.println("Invalid move. Please try again");
-                return;
-            } else if (moveCheck == 0) return;
-            move.setRemove(Integer.parseInt(in) - 1);
-            possibleMoves = getValidMoves(Integer.parseInt(in) - 1,3);
+        else{
+            valid = movePhaseTwoToFive();
         }
-        if (!board.streamMoves().anyMatch(k -> k.equals(move))) valid = false;
-        if (valid) {
-            board = (Morris) board.makeMove(move);
-        } else {
+        if (!valid) {
             System.out.println("Invalid move. Please try again");
         }
     }
 
+    public boolean movePhaseTwoToFive(){
+        int to;
+        Integer from = null;
+        Integer remove = null;
+        final Integer removeMove;
+        final Integer fromMove;
+        System.out.print("Enter Stone to move: ");
+        in = sc.next();
+        int movecheck = isValidMove();
+        if (movecheck == 0)return true;
+        if (movecheck == -1){
+            return false;
+        }
+        from = Integer.parseInt(in)-1;
+
+        System.out.print("Enter position to move stone: ");
+        in = sc.next();
+        movecheck = isValidMove();
+        if (movecheck == 0)return true;
+        if (movecheck == -1){
+            return false;
+        }
+        to = Integer.parseInt(in)-1;
+        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
+        if (possibleMovesWithRemoves.count() > 0){
+            System.out.print("Enter stone to remove: ");
+            in = sc.next();
+            movecheck = isValidMove();
+            if (movecheck == 0)return true;
+            if (movecheck == -1){
+                return false;
+            }
+            remove = Integer.parseInt(in)-1;
+        }
+        removeMove = remove;
+        fromMove = from;
+        if (remove != null && board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJumpAndRemove(fromMove,to,removeMove)))){
+            board = board.makeMove(MorrisMove.placeAndRemove(to,removeMove)).get();
+            return true;
+        }
+        else if(board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJump(fromMove, to)))){
+            board = board.makeMove(MorrisMove.place(to)).get();
+            return true;
+        }
+        else{
+            return false;
+        }
+
+    }
+    public boolean movePhaseOne(){
+        int to;
+        Integer remove = null;
+        final Integer removeMove;
+        System.out.print("Enter position to set stone: ");
+        in = sc.next();
+        int movecheck = isValidMove();
+        if (movecheck == 0)return true;
+        if (movecheck == -1){
+            return false;
+        }
+        to = Integer.parseInt(in)-1;
+        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
+        /* FOR TEST  */
+        Stream<MorrisMove> test = board.streamMoves().filter(k->k.getRemove().isPresent());
+        test.forEach(System.out::println);
+
+        /* FOR TEST  */
+        if (possibleMovesWithRemoves.count() > 0){
+            System.out.print("Enter stone to remove: ");
+            in = sc.next();
+            movecheck = isValidMove();
+            if (movecheck == 0)return true;
+            if (movecheck == -1){
+                return false;
+            }
+            remove = Integer.parseInt(in)-1;
+        }
+        removeMove = remove;
+        if (remove != null && board.streamMoves().anyMatch(k->k.equals(MorrisMove.placeAndRemove(to,removeMove)))){
+            board = board.makeMove(MorrisMove.placeAndRemove(to,removeMove)).get();
+            return true;
+        }
+        else if(board.streamMoves().anyMatch(k->k.equals(MorrisMove.place(to)))){
+            board = board.makeMove(MorrisMove.place(to)).get();
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
     /***********************************************************************************
      * getValidMoves(Function<MorrisMove, Integer> f, int input):
      *      -> returns a stream containing valid moves, which match with the input
@@ -190,7 +246,7 @@ public class UI {
     }
 
     public void askSaveGame() {
-        String regex = "^(y)| (n)$";
+        String regex = "^(y)|(n)$";
         System.out.println("\nDo you want to save the game? type: <y> / <n>");
         in = sc.next();
         in = in.toLowerCase();
