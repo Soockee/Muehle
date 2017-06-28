@@ -1,7 +1,6 @@
-import javax.print.attribute.IntegerSyntax;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -15,7 +14,7 @@ public interface ImmutableBoard<Move> {
      */
 
     default Optional<? extends ImmutableBoard<Move>> makeMoveNew(Move move) {// may be changed to Optional later
-        return childs()
+        return children()
                 .filter(board -> board.getMove().equals(move))
                 .findAny();
     }
@@ -23,7 +22,7 @@ public interface ImmutableBoard<Move> {
     default Optional<? extends ImmutableBoard<Move>> makeMoveNew(Move... moves) {
         Optional<? extends ImmutableBoard<Move>> res = Optional.of(this);
         for (Move move : moves) {
-            if(!res.isPresent()) return Optional.empty();
+            if (!res.isPresent()) return Optional.empty();
             else res = res.get().makeMoveNew(move);
         }
         return res;
@@ -33,9 +32,18 @@ public interface ImmutableBoard<Move> {
 
     ImmutableBoard<Move> parent(); // returns parent board, one Move behind
 
-    Stream<? extends ImmutableBoard<Move>> childs(); //target boards
+    Stream<? extends ImmutableBoard<Move>> children(); //target boards
 
-    Stream<? extends ImmutableBoard<Move>> history(); //ordered from beginning to most recent Move
+    default Stream<? extends ImmutableBoard<Move>> history() {
+        List<? extends ImmutableBoard<Move>> reversedHistory = Stream
+                .iterate(this, board -> board.parent() != null, ImmutableBoard::parent)
+                .collect(Collectors.toList());
+        ImmutableBoard<Move>[] b = (ImmutableBoard<Move>[]) Stream
+                .iterate(this, board -> board.parent() != null, ImmutableBoard::parent)
+                .toArray();
+        //return IntStream.rangeClosed(1, b.length).mapToObj(n -> b[b.length -n]);
+        return IntStream.rangeClosed(1, reversedHistory.size()).mapToObj(n -> reversedHistory.get(reversedHistory.size() - 1));
+    }//ordered from beginning to most recent Move
 
     /*
      * old interface below

@@ -130,7 +130,7 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
     }
 
     @Override
-    public Stream<Morris> childs() {
+    public Stream<Morris> children() {
         return streamMoves().map(this::makeMoveNew).map(Optional::get);
     }
 
@@ -447,7 +447,6 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
      *
      *
      *****************************************************************/
-    //\s*(?:Turn\s*\d*\s*:)?\s*(\d+)?\s*->\s*(\d+)\s*(?::\s*(\d+))?\s* regex for Loading <= deprecated
     @Override
     public Morris load(String name) throws IOException {
         return load(Paths.get(name));
@@ -468,7 +467,8 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
             load.flip();
         }
         for (String movePart : moveParts) {
-            MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1).orElseThrow(() -> new IOException("File was corrupted"));
+            MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1)
+                    .orElseThrow(() -> new IOException("File is in invalid Format"));
             if(!load.isValidMove(move)) throw new IOException("File contains illegal Moves");
             load = load.makeMoveNew(move).get();
         }
@@ -538,5 +538,9 @@ public class Morris implements SaveableGame<Morris>, ImmutableBoard<MorrisMove> 
                 .map(i -> board[i])
                 .toArray();
         return new Morris(newBoard, turn, movesWithoutRemoving, parent, phase, isFlipped);
+    }
+
+    public int getPhase() {
+        return phase;
     }
 }

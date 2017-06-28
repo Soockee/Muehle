@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -42,6 +41,10 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         int[] newBoard = Arrays.copyOf(this.board, 9);
         newBoard[move] = turn;
         return Optional.of(new T3(newBoard, -turn, this, isFlipped));
+    }
+
+    public Optional<T3> makeMoveNewAlt(Integer move) {
+        return children().filter(t3 -> t3.getMove().get().equals(move)).findAny();
     }
 
     @Override
@@ -111,7 +114,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         return isFlipped;
     }
 
-    public Stream<T3> childs() {
+    public Stream<T3> children() {
         return IntStream.range(0, 9)
                 .filter(pos -> board[pos] == 0)
                 .mapToObj(this::makeMoveNew)
