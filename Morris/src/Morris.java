@@ -54,7 +54,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
 
         b = b.makeMove(MorrisMove.place(6)).get();
 
-        b = b.makeMove(MorrisMove.place(2)).get();
+        //b = b.makeMove(MorrisMove.place(2)).get();
 
         try{
 
