@@ -1,3 +1,4 @@
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -63,6 +64,16 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .map(Optional::get)
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
     }
+
+    /*@Override
+    public List<Integer> history() {
+        return Stream.iterate(this, board ->  board.parent() != null, t3 -> (T3) t3.parent())
+                .map(StreamBoard::getMove)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }//ordered from beginning to most recent Move
+
+   */
 
     @Override
     public boolean isWin() {
