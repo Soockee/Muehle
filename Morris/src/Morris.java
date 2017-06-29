@@ -443,7 +443,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *****************************************************************/
     @Override
     public boolean isDraw() {
-        return phase != 1 && movesWithoutRemoving >= 20;
+        return phase != 1 && movesWithoutRemoving > 30;
     }
 
     /******************************************************************
