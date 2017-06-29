@@ -1,5 +1,8 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Created by Paul Krappatsch on 11.06.2017.
  */

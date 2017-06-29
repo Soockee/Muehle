@@ -20,7 +20,7 @@ public interface SaveableGame<SaveableBoard> {
 
     SaveableBoard load(Path path) throws IOException;
 
-/*default void save(S board, String name) throws IOException {
+    /*default void save(S board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 

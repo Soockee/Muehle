@@ -249,10 +249,10 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
             if (openStone.length == 0) {//if all Stones are in Mills, Mills can be broken
                 return IntStream.range(0, 24)
                         .filter(pos -> board[pos] == -turn)
-                        .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().get(), morrisMove.getTo(), remove));
+                        .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().orElse(null), morrisMove.getTo(), remove));
             }
             return Arrays.stream(openStone)
-                    .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().get(), morrisMove.getTo(), remove));
+                    .mapToObj(remove -> MorrisMove.moveOrJumpAndRemove(morrisMove.getFrom().orElse(null), morrisMove.getTo(), remove));
         }
         return Stream.of(morrisMove);
     }
@@ -502,10 +502,11 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
                 .map(Arrays::stream)
                 .flatMap(stringStream -> stringStream)
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
         if (moveParts.getLast().toLowerCase().equals("f")) {
             moveParts.removeLast();
-            load.flip();
+            load =(Morris) load.flip();
         }
         for (String movePart : moveParts) {
             MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1)

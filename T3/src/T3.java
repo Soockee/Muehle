@@ -169,6 +169,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .map(s -> s.split(","))
                 .flatMap(Arrays::stream)
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
         if (moves.getLast().toLowerCase().equals("f")) {
             moves.removeLast();
