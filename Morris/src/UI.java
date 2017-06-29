@@ -78,6 +78,8 @@ public class UI {
         }
         if (!valid) {
             System.out.println("Invalid move. Please try again");
+            System.out.println("Following moves are possible: ");
+            board.streamMoves().forEach(k-> System.out.print("["+k.toStringUser()+"]"+" "));
         }
     }
 
@@ -200,8 +202,8 @@ public class UI {
      *
      **********************************************************************************/
     public int isValidMove() {
-        String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
-        String regexForOptions = "^(0|save|exit|\\?||guide||load||undo||flip)";
+        String regex = "^((?:[1-9]|0[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
+        String regexForOptions = "^(0|save|exit|\\?||guide||load||undo||flip||new)";
         in = in.trim();
         int res = -1;
         if (in.matches(regexForOptions)) {
@@ -227,6 +229,9 @@ public class UI {
                 board = (Morris) board.parent();
             } else if (in.equalsIgnoreCase("flip")) {
                 board = (Morris) board.flip();
+                System.out.println(board.isFlipped());
+            } else if (in.equalsIgnoreCase("new")) {
+                resetGame();
             }
             res = 0;
         } else if (in.matches(regex)) {
@@ -271,7 +276,19 @@ public class UI {
         buffer += "<guide>: A Gameguide which helps you to understand how the game works\n";
         buffer += "<save>: saves the current game\n";
         buffer += "<load>: loads the file 'save.txt' in the current directory\n";
-        buffer += "<flip>: flip causes to switch the symbols of the stones";
+        buffer += "<flip>: flip causes to switch the symbols of the stones\n";
+        buffer += "<new>: new game\n";
+        buffer += "1  -  -  -  -  -  2  -  -  -  -  -  3\n";
+        buffer += "|                 |                 |\n";
+        buffer += "|     9  -  -  - 10  -  -  - 11     |\n";
+        buffer += "|     |           |           |     |\n";
+        buffer += "|     |    17  - 18  - 19     |     |\n";
+        buffer += "8  - 16  - 24          20  - 12  -  4\n";
+        buffer += "|     |    23  - 22  - 21     |     |\n";
+        buffer += "|     |           |           |     |\n";
+        buffer += "|    15  -  -  - 14  -  -  - 13     |\n";
+        buffer += "|                 |                 |\n";
+        buffer += "7  -  -  -  -  -  6  -  -  -  -  -  5\n";
         System.out.println(buffer);
     }
 
@@ -286,6 +303,7 @@ public class UI {
         buffer += "If a mill is completed, the player which owns the mill can remove a stone of his opponent as long as the stone is not part of a mill\n";
         buffer += "If all opponent stones are in a mill, these millstones can be removed aswell\n";
         buffer += "The player who achieves to reduce the opponent stones under 4 wins\n";
+
         System.out.println(buffer);
     }
 

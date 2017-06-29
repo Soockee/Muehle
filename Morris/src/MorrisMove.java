@@ -84,5 +84,10 @@ public class MorrisMove {
                 + String.format("%02d", to)
                 + (getRemove().isPresent() ? "-" + String.format("%02d", remove) : "");
     }
+    public String toStringUser() {
+        return (getFrom().isPresent() ? String.format("%02d", from+1) + "-" : "")
+                + String.format("%02d", to+1)
+                + (getRemove().isPresent() ? "-" + String.format("%02d", remove+1) : "");
+    }
 }
 
