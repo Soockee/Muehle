@@ -1,4 +1,5 @@
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -8,7 +9,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 /**
  * Created by Paul Krappatsch on 13.06.2017.
  */
-public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
+public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
 
     private final int[] board;
     private final int turn;
@@ -37,22 +37,19 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         this.isFlipped = false;
     }
 
-    @Override
-    public Optional<T3> makeMoveNew(Integer move) {
+    private Optional<T3> makeMoveIntern(Integer move) {
         int[] newBoard = Arrays.copyOf(this.board, 9);
         newBoard[move] = turn;
         return Optional.of(new T3(newBoard, -turn, this, isFlipped));
     }
 
     @Override
-    public ImmutableBoard<Integer> makeMove(Integer move) {
-        int[] newBoard = Arrays.copyOf(this.board, 9);
-        newBoard[move] = turn;
-        return new T3(newBoard, -turn, this, isFlipped);
+    public Optional<T3> makeMove(Integer move) {
+        return children().filter(t3 -> t3.getMove().get().equals(move)).findAny();
     }
 
     @Override
-    public ImmutableBoard<Integer> parent() {
+    public StreamBoard<Integer> parent() {
         return parent;
     }
 
@@ -61,23 +58,24 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public Stream<T3> history() {
-        T3[] historyReversed = Stream.iterate(this, t3 -> t3.parent() != null, t3 -> t3.parent)
-                .toArray(T3[]::new);
-        return IntStream.rangeClosed(1, historyReversed.length)
-                .mapToObj(i -> historyReversed[historyReversed.length - i]);
-    }
-
-    @Override
     public List<Integer> getHistory() {
-        LinkedList<Integer> history = new LinkedList<>();
-        Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
-                .filter(t3 -> t3.parent != null)
+        List<Integer> moves = Stream.iterate(this, t3 -> t3.parent != null, t3->  t3.parent)
                 .map(T3::getMove)
                 .map(Optional::get)
-                .forEachOrdered(history::addFirst);
-        return history;
+                .collect(Collectors.toList());
+        return IntStream.rangeClosed(1, moves.size()).mapToObj(operand -> moves.get(moves.size() - operand))
+                .collect(Collectors.toList());
     }
+
+    /*@Override
+    public List<Integer> history() {
+        return Stream.iterate(this, board ->  board.parent() != null, t3 -> (T3) t3.parent())
+                .map(StreamBoard::getMove)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }//ordered from beginning to most recent Move
+
+   */
 
     @Override
     public boolean isWin() {
@@ -102,7 +100,7 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     }
 
     @Override
-    public ImmutableBoard<Integer> flip() {
+    public StreamBoard<Integer> flip() {
         return new T3(Arrays.copyOf(board, 24), turn, this.parent, !isFlipped);
     }
 
@@ -111,14 +109,13 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
         return isFlipped;
     }
 
-    public Stream<T3> childs() {
+    public Stream<T3> children() {
         return IntStream.range(0, 9)
                 .filter(pos -> board[pos] == 0)
-                .mapToObj(this::makeMoveNew)
+                .mapToObj(this::makeMoveIntern)
                 .map(Optional::get);
     }
 
-    @Override
     public List<Integer> moves() {
         return streamMoves().boxed().collect(Collectors.toList());
     }
@@ -135,13 +132,30 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
     @Override
     public String toString() {
         char[] repr = isFlipped ? new char[]{'X', '.', 'O'} : new char[]{'O', '.', 'X'};
-        return IntStream.range(0, 3)
+        return IntStream.range(0, 3) // rows
                 .mapToObj(row -> IntStream.rangeClosed(row * 3, row * 3 + 2)
                         .map(n -> board[n])
                         .map(n -> repr[n + 1])
                         .mapToObj(n -> Character.toString((char) n))
                         .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
+    }
+
+     public void save(T3 board, String name) throws IOException {
+        save(board, Paths.get(name));
+    }
+
+     public void save(T3 board, Path path) throws IOException {
+        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+        out.write(board.getHistory() .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","))
+        );
+        if (board.isFlipped()) {
+            out.write(",f");
+        }
+        out.write("\n");
+        out.close();
     }
 
     @Override
@@ -170,14 +184,14 @@ public class T3 implements ImmutableBoard<Integer>, SaveableGame<T3> {
                 .map(Integer::parseInt)
                 .collect(Collectors.toList())) {
             if (load.isValidMove(pos)) {
-                load = load.makeMoveNew(pos).get();
+                load = load.makeMoveIntern(pos).get();
             } else throw new IOException("File contains invalid Moves");
         }
         return load;
     }
 
     private boolean isValidMove(Integer pos) {
-        return streamMoves().anyMatch(i -> i == pos);
+        return streamMoves().anyMatch(move -> move == pos);
     }
 
     @Override

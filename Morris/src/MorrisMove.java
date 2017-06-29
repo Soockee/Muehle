@@ -1,9 +1,6 @@
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -16,7 +13,8 @@ public class MorrisMove {
     private Integer remove;
 
     public static Optional<MorrisMove> parseMove(String input, boolean isPhase1) {
-        if(!input.matches("\\s*(?:(\\d{1,2})\\s*-)?\\s*(\\d{1,2})\\s*(?:-\\s*(\\d{1,2}))?\\s*")) return Optional.empty();
+        if (!input.matches("\\s*(?:(\\d{1,2})\\s*-)?\\s*(\\d{1,2})\\s*(?:-\\s*(\\d{1,2}))?\\s*"))
+            return Optional.empty();
         List<Integer> parts = Arrays.stream(input.split("-"))
                 .map(String::trim)
                 .map(Integer::parseInt)
@@ -37,15 +35,15 @@ public class MorrisMove {
         return new MorrisMove(null, to, null);
     }
 
-    public static MorrisMove placeAndRemove(int to, int remove) {
+    public static MorrisMove placeAndRemove(int to, Integer remove) {
         return new MorrisMove(null, to, remove);
     }
 
-    public static MorrisMove moveOrJump(int from, int to) {
+    public static MorrisMove moveOrJump(Integer from, int to) {
         return new MorrisMove(from, to, null);
     }
 
-    public static MorrisMove moveOrJumpAndRemove(int from, int to, int remove) {
+    public static MorrisMove moveOrJumpAndRemove(Integer from, int to, Integer remove) {
         return new MorrisMove(from, to, remove);
     }
 
@@ -60,21 +58,6 @@ public class MorrisMove {
                 ((MorrisMove) obj).getTo() == to &&
                 ((MorrisMove) obj).getFrom().equals(getFrom()) &&
                 ((MorrisMove) obj).getRemove().equals(getRemove());
-    }
-
-    public void setFrom(int from) {
-        this.from = from;
-    }
-
-    public void setTo(int to) {
-        this.to = to;
-    }
-
-    public void setRemove(int remove) {
-        this.remove = remove;
-    }
-
-    MorrisMove() {
     }
 
     private MorrisMove(Integer from, int to, Integer remove) {
@@ -97,7 +80,9 @@ public class MorrisMove {
 
     @Override
     public String toString() {
-        return (getFrom().isPresent() ? from + "-" : "") + to + (getRemove().isPresent() ? "-" + remove : "");
+        return (getFrom().isPresent() ? String.format("%02d", from) + "-" : "")
+                + String.format("%02d", to)
+                + (getRemove().isPresent() ? "-" + String.format("%02d", remove) : "");
     }
 }
 
