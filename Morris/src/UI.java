@@ -1,15 +1,12 @@
 /*************************************************************
  * Created by Paul Krappatsch, Björn Franke, Simon Stockhause
- * Last edit: 14.06.2017
+ * Last edit: 29.06.2017
  ************************************************************/
 
-import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UI {
@@ -214,10 +211,16 @@ public class UI {
         int res = -1;
         if (in.matches(regexForOptions)) {
             if (in.equals("0")) {
-                board = (Morris) getBestMoveTwo().get();
+                board = (Morris) getBestMove().get();
             } else if (in.equalsIgnoreCase("save")) {
                 save();
             } else if (in.equalsIgnoreCase("exit")) {
+                try{
+                    System.in.close();
+                }
+                catch (IOException ex){
+                    System.out.println(ex.getMessage());
+                }
                 System.exit(0);
 
             } else if (in.equals("?")) {
@@ -309,11 +312,15 @@ public class UI {
             }
             buffer += " Won!";
             System.out.println(buffer);
+            System.out.println("Endgame: ");
+            System.out.println(board.toString());
             askSaveGame();
             resetGame();
         }
         if (board.isDraw()) {
             System.out.println("The game ended in a Draw!");
+            System.out.println("Endgame: ");
+            System.out.println(board.toString());
             askSaveGame();
             resetGame();
         }
@@ -338,62 +345,87 @@ public class UI {
         }
     }
 
-
-    public Optional<StreamBoard> getBestMoveTwo() {
-        StreamBoard res = null;
-        boolean userActive = true;
+    public Optional<StreamBoard> getBestMove() {
+        StreamBoard res;
         Morris tmp = board.makeMove(board.streamMoves().findAny().get()).get();
         res = tmp;
 
+        CompletableFuture<Boolean> userInterupt = CompletableFuture.supplyAsync(()->{
+            System.out.println("\nEnter any input to interrupt the search\n");
+            sc.hasNext();
+            return true;
+        });
+
         CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(()->{
+            System.out.println("Let me think about it");
             ai.evaluateBestBoard(board,1);
             StreamBoard b = ai.getBestMove();
             return b;
         });
         CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) ->{
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("starting to eval cf2");
+            System.out.println("What if i do...?");
             ai.evaluateBestBoard(board, 2);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) ->{
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("starting to eval cf3");
+            System.out.println("...or that?");
             ai.evaluateBestBoard(board, 3);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) ->{
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("starting to eval cf4");
+            System.out.println("This seems quite good");
             ai.evaluateBestBoard(board, 4);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<Boolean> cf5 = CompletableFuture.supplyAsync(()->{
-            System.out.println("Type any key to interrupt the search");
-            String input = null;
-            input = sc.next();
-            return true;
+        CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("oh boy!");
+            ai.evaluateBestBoard(board, 5);
+            comfut.complete(ai.getBestMove());
+            return comfut;
         });
-        while (!cf5.isDone() && !cf4.isDone()){
+        CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("I need to think this through");
+            ai.evaluateBestBoard(board, 6);
+            comfut.complete(ai.getBestMove());
+            return comfut;
+        });
+        CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("This is going to be a masterful move!");
+            ai.evaluateBestBoard(board, 7);
+            comfut.complete(ai.getBestMove());
+            return comfut;
+        });
+        while (!userInterupt.isDone() && !cf7.isDone()){
             if (cf1.isDone())res = cf1.join();
             if (cf2.isDone())res = cf2.join();
             if (cf3.isDone())res = cf3.join();
-            if (cf4.isDone()){
-                res = cf4.join();
-                System.out.println("search done");
-                //irgendwas mit dem scanner machen will nicht das system.in geschlossen wird!
+            if (cf4.isDone())res = cf4.join();
+            if (cf5.isDone())res = cf5.join();
+            if (cf6.isDone())res = cf6.join();
+            if (cf7.isDone()){
+                res = cf7.join();
+                System.out.println("I am done searching!");
+                userInterupt.cancel(true);
             }
         }
         try{
-            if (cf1.cancel(true)) System.out.println("cf1 cancelled");
-            if (cf2.cancel(true)) System.out.println("cf2 cancelled");
-            if (cf3.cancel(true)) System.out.println("cf3 cancelled");
-            if (cf4.cancel(true)) System.out.println("cf4 cancelled");
-            if (cf5.cancel(true)) System.out.println("cf5 cancelled");
-
+            if (cf1.cancel(true));
+            else if (cf2.cancel(true));
+            else if (cf3.cancel(true));
+            else if (cf4.cancel(true));
+            else if (cf5.cancel(true));
+            else if (cf6.cancel(true));
+            else if (cf7.cancel(true));
+            userInterupt.cancel(true);
         }
         catch (java.util.concurrent.CancellationException ce){
             System.out.println("some cancel error with CompletableFutures");
