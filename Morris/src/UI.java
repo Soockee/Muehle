@@ -4,8 +4,12 @@
  ************************************************************/
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UI {
@@ -22,11 +26,13 @@ public class UI {
     private Morris board;
     private String in;
     private Scanner sc;
+    private Ai ai;
 
     public UI() {
         board = new Morris();
         in = "";
         sc = new Scanner(System.in);
+        ai = new Ai();
     }
 
     /**********************************************************
@@ -103,7 +109,8 @@ public class UI {
         }
         to = Integer.parseInt(in)-1;
         Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
-        if (possibleMovesWithRemoves.count() > 0){
+        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k->k.getRemove().isPresent());
+        if (possibleMovesWithRemoves2.anyMatch(k->k.getTo()==to) && possibleMovesWithRemoves.count() > 0){
             System.out.print("Enter stone to remove: ");
             in = sc.next();
             movecheck = isValidMove();
@@ -116,11 +123,11 @@ public class UI {
         removeMove = remove;
         fromMove = from;
         if (remove != null && board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJumpAndRemove(fromMove,to,removeMove)))){
-            board = board.makeMove(MorrisMove.placeAndRemove(to,removeMove)).get();
+            board = board.makeMove(MorrisMove.moveOrJumpAndRemove(fromMove,to,removeMove)).get();
             return true;
         }
         else if(board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJump(fromMove, to)))){
-            board = board.makeMove(MorrisMove.place(to)).get();
+            board = board.makeMove(MorrisMove.moveOrJump(fromMove,to)).get();
             return true;
         }
         else{
@@ -141,12 +148,8 @@ public class UI {
         }
         to = Integer.parseInt(in)-1;
         Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
-        /* FOR TEST  */
-        Stream<MorrisMove> test = board.streamMoves().filter(k->k.getRemove().isPresent());
-        test.forEach(System.out::println);
-
-        /* FOR TEST  */
-        if (possibleMovesWithRemoves.count() > 0){
+        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k->k.getRemove().isPresent());
+        if (possibleMovesWithRemoves2.anyMatch(k->k.getTo()==to) && possibleMovesWithRemoves.count() > 0){
             System.out.print("Enter stone to remove: ");
             in = sc.next();
             movecheck = isValidMove();
@@ -206,12 +209,12 @@ public class UI {
      **********************************************************************************/
     public int isValidMove() {
         String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
-        String regexForOptions = "^(0|save|exit|\\?||guide||load)";
+        String regexForOptions = "^(0|save|exit|\\?||guide||load||undo)";
         in = in.trim();
         int res = -1;
         if (in.matches(regexForOptions)) {
             if (in.equals("0")) {
-                //computer move
+                board = (Morris) getBestMoveTwo().get();
             } else if (in.equalsIgnoreCase("save")) {
                 save();
             } else if (in.equalsIgnoreCase("exit")) {
@@ -265,6 +268,7 @@ public class UI {
         buffer += "<save> : Saving the Game\n";
         buffer += "<0> : AI is making the Move for you\n";
         buffer += "<1-24>: Enter a number between 1 and 24 to make this move and follow the instructions afterwards\n";
+        buffer += "<undo>: undo the last move\n";
         buffer += "<guide>: A Gameguide which helps you to understand how the game works\n";
         buffer += "<save>: saves the current game\n";
         buffer += "<load>: loads the file 'save.txt' in the current directory\n";
@@ -329,5 +333,72 @@ public class UI {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        if (board.isWin() || board.isDraw()){
+            System.out.println(board.toString());
+        }
+    }
+
+
+    public Optional<StreamBoard> getBestMoveTwo() {
+        StreamBoard res = null;
+        boolean userActive = true;
+        Morris tmp = board.makeMove(board.streamMoves().findAny().get()).get();
+        res = tmp;
+
+        CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(()->{
+            ai.evaluateBestBoard(board,1);
+            StreamBoard b = ai.getBestMove();
+            return b;
+        });
+        CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("starting to eval cf2");
+            ai.evaluateBestBoard(board, 2);
+            comfut.complete(ai.getBestMove());
+            return comfut;
+        });
+        CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("starting to eval cf3");
+            ai.evaluateBestBoard(board, 3);
+            comfut.complete(ai.getBestMove());
+            return comfut;
+        });
+        CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) ->{
+            CompletableFuture comfut = new CompletableFuture();
+            System.out.println("starting to eval cf4");
+            ai.evaluateBestBoard(board, 4);
+            comfut.complete(ai.getBestMove());
+            return comfut;
+        });
+        CompletableFuture<Boolean> cf5 = CompletableFuture.supplyAsync(()->{
+            System.out.println("Type any key to interrupt the search");
+            String input = null;
+            input = sc.next();
+            return true;
+        });
+        while (!cf5.isDone() && !cf4.isDone()){
+            if (cf1.isDone())res = cf1.join();
+            if (cf2.isDone())res = cf2.join();
+            if (cf3.isDone())res = cf3.join();
+            if (cf4.isDone()){
+                res = cf4.join();
+                System.out.println("search done");
+                //irgendwas mit dem scanner machen will nicht das system.in geschlossen wird!
+            }
+        }
+        try{
+            if (cf1.cancel(true)) System.out.println("cf1 cancelled");
+            if (cf2.cancel(true)) System.out.println("cf2 cancelled");
+            if (cf3.cancel(true)) System.out.println("cf3 cancelled");
+            if (cf4.cancel(true)) System.out.println("cf4 cancelled");
+            if (cf5.cancel(true)) System.out.println("cf5 cancelled");
+
+        }
+        catch (java.util.concurrent.CancellationException ce){
+            System.out.println("some cancel error with CompletableFutures");
+        }
+        sc = new Scanner(System.in);
+        return Optional.of(res);
     }
 }
