@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,6 +24,14 @@ public interface StreamBoard<Move> extends SaveableBoard<Move> {
         return res;
     }
 
+    default List<Move> getHistory() {
+        return Stream.iterate(this, board -> board.parent() != null,StreamBoard::parent)
+                .sequential()
+                .map(StreamBoard::getMove)
+                .map(Optional::get)
+                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
+    }
+
     Optional<Move> getMove();//returns Move from parentBoard to this instance
 
     StreamBoard<Move> parent(); // returns parent board, one Move behind
@@ -33,7 +43,7 @@ public interface StreamBoard<Move> extends SaveableBoard<Move> {
     boolean isDraw();
 
     default boolean isBeginnersTurn() {
-        return getHistory().size() % 2 == 0; // getHistoryNew().count() & 1 == 0
+        return getHistory().size() % 2 == 0;
     }
 
     StreamBoard<Move> flip();
