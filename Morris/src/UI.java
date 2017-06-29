@@ -79,7 +79,7 @@ public class UI {
         if (!valid) {
             System.out.println("Invalid move. Please try again");
             System.out.println("Following moves are possible: ");
-            board.streamMoves().forEach(k-> System.out.print("["+k.toStringUser()+"]"+" "));
+            board.streamMoves().forEach(k -> System.out.print("[" + k.toStringUser() + "]" + " "));
         }
     }
 
