@@ -71,18 +71,19 @@ public class UI {
     public void checkInput() {
         boolean valid = true;
         int phase = board.getPhase();
-        if (phase ==1){
+        if (phase == 1) {
             valid = movePhaseOne();
-        }
-        else{
+        } else {
             valid = movePhaseTwoToFive();
         }
         if (!valid) {
             System.out.println("Invalid move. Please try again");
+            System.out.println("Following moves are possible: ");
+            board.streamMoves().forEach(k -> System.out.print("[" + k.toStringUser() + "]" + " "));
         }
     }
 
-    public boolean movePhaseTwoToFive(){
+    public boolean movePhaseTwoToFive() {
         int to;
         Integer from = null;
         Integer remove = null;
@@ -91,98 +92,94 @@ public class UI {
         System.out.print("Enter Stone to move: ");
         in = sc.next();
         int movecheck = isValidMove();
-        if (movecheck == 0)return true;
-        if (movecheck == -1){
+        if (movecheck == 0) return true;
+        if (movecheck == -1) {
             return false;
         }
-        from = Integer.parseInt(in)-1;
+        from = Integer.parseInt(in) - 1;
 
         System.out.print("Enter position to move stone: ");
         in = sc.next();
         movecheck = isValidMove();
-        if (movecheck == 0)return true;
-        if (movecheck == -1){
+        if (movecheck == 0) return true;
+        if (movecheck == -1) {
             return false;
         }
-        to = Integer.parseInt(in)-1;
-        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
-        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k->k.getRemove().isPresent());
-        if (possibleMovesWithRemoves2.anyMatch(k->k.getTo()==to) && possibleMovesWithRemoves.count() > 0){
+        to = Integer.parseInt(in) - 1;
+        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k -> k.getRemove().isPresent());
+        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k -> k.getRemove().isPresent());
+        if (possibleMovesWithRemoves2.anyMatch(k -> k.getTo() == to) && possibleMovesWithRemoves.count() > 0) {
             System.out.print("Enter stone to remove: ");
             in = sc.next();
             movecheck = isValidMove();
-            if (movecheck == 0)return true;
-            if (movecheck == -1){
+            if (movecheck == 0) return true;
+            if (movecheck == -1) {
                 return false;
             }
-            remove = Integer.parseInt(in)-1;
+            remove = Integer.parseInt(in) - 1;
         }
         removeMove = remove;
         fromMove = from;
-        if (remove != null && board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJumpAndRemove(fromMove,to,removeMove)))){
-            board = board.makeMove(MorrisMove.moveOrJumpAndRemove(fromMove,to,removeMove)).get();
+        if (remove != null && board.streamMoves().anyMatch(k -> k.equals(MorrisMove.moveOrJumpAndRemove(fromMove, to, removeMove)))) {
+            board = board.makeMove(MorrisMove.moveOrJumpAndRemove(fromMove, to, removeMove)).get();
             return true;
-        }
-        else if(board.streamMoves().anyMatch(k->k.equals(MorrisMove.moveOrJump(fromMove, to)))){
-            board = board.makeMove(MorrisMove.moveOrJump(fromMove,to)).get();
+        } else if (board.streamMoves().anyMatch(k -> k.equals(MorrisMove.moveOrJump(fromMove, to)))) {
+            board = board.makeMove(MorrisMove.moveOrJump(fromMove, to)).get();
             return true;
-        }
-        else{
+        } else {
             return false;
         }
 
     }
-    public boolean movePhaseOne(){
+
+    public boolean movePhaseOne() {
         int to;
         Integer remove = null;
         final Integer removeMove;
         System.out.print("Enter position to set stone: ");
         in = sc.next();
         int movecheck = isValidMove();
-        if (movecheck == 0)return true;
-        if (movecheck == -1){
+        if (movecheck == 0) return true;
+        if (movecheck == -1) {
             return false;
         }
-        to = Integer.parseInt(in)-1;
-        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k->k.getRemove().isPresent());
-        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k->k.getRemove().isPresent());
-        if (possibleMovesWithRemoves2.anyMatch(k->k.getTo()==to) && possibleMovesWithRemoves.count() > 0){
+        to = Integer.parseInt(in) - 1;
+        Stream<MorrisMove> possibleMovesWithRemoves = board.streamMoves().filter(k -> k.getRemove().isPresent());
+        Stream<MorrisMove> possibleMovesWithRemoves2 = board.streamMoves().filter(k -> k.getRemove().isPresent());
+        if (possibleMovesWithRemoves2.anyMatch(k -> k.getTo() == to) && possibleMovesWithRemoves.count() > 0) {
             System.out.print("Enter stone to remove: ");
             in = sc.next();
             movecheck = isValidMove();
-            if (movecheck == 0)return true;
-            if (movecheck == -1){
+            if (movecheck == 0) return true;
+            if (movecheck == -1) {
                 return false;
             }
-            remove = Integer.parseInt(in)-1;
+            remove = Integer.parseInt(in) - 1;
         }
         removeMove = remove;
-        if (remove != null && board.streamMoves().anyMatch(k->k.equals(MorrisMove.placeAndRemove(to,removeMove)))){
-            board = board.makeMove(MorrisMove.placeAndRemove(to,removeMove)).get();
+        if (remove != null && board.streamMoves().anyMatch(k -> k.equals(MorrisMove.placeAndRemove(to, removeMove)))) {
+            board = board.makeMove(MorrisMove.placeAndRemove(to, removeMove)).get();
             return true;
-        }
-        else if(board.streamMoves().anyMatch(k->k.equals(MorrisMove.place(to)))){
+        } else if (board.streamMoves().anyMatch(k -> k.equals(MorrisMove.place(to)))) {
             board = board.makeMove(MorrisMove.place(to)).get();
             return true;
-        }
-        else{
+        } else {
             return false;
         }
     }
+
     /***********************************************************************************
      * getValidMoves(Function<MorrisMove, Integer> f, int input):
      *      -> returns a stream containing valid moves, which match with the input
      *      -> the function determinates the filter (getTo, getFrom, getRemove)
      *
      **********************************************************************************/
-    Stream<MorrisMove> getValidMoves(int input, int check){
-        if (check == 1){
+    Stream<MorrisMove> getValidMoves(int input, int check) {
+        if (check == 1) {
             return board.streamMoves().filter(morrisMove -> morrisMove.getFrom().get() == input);
-        }
-        else if (check == 2){
+        } else if (check == 2) {
             return board.streamMoves().filter(morrisMove -> morrisMove.getTo() == input);
-        }
-        else{
+        } else {
             return board.streamMoves().filter(morrisMove -> morrisMove.getRemove().get() == input);
         }
     }
@@ -205,8 +202,8 @@ public class UI {
      *
      **********************************************************************************/
     public int isValidMove() {
-        String regex = "^((?:[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
-        String regexForOptions = "^(0|save|exit|\\?||guide||load||undo)";
+        String regex = "^((?:[1-9]|0[1-9]|1[0-9]|2[0-3])(?:\\.\\d{1,2})?|24?)$";
+        String regexForOptions = "^(0|save|exit|\\?||guide||load||undo||flip||new)";
         in = in.trim();
         int res = -1;
         if (in.matches(regexForOptions)) {
@@ -215,10 +212,9 @@ public class UI {
             } else if (in.equalsIgnoreCase("save")) {
                 save();
             } else if (in.equalsIgnoreCase("exit")) {
-                try{
+                try {
                     System.in.close();
-                }
-                catch (IOException ex){
+                } catch (IOException ex) {
                     System.out.println(ex.getMessage());
                 }
                 System.exit(0);
@@ -231,6 +227,11 @@ public class UI {
                 loadFile();
             } else if (in.equalsIgnoreCase("undo")) {
                 board = (Morris) board.parent();
+            } else if (in.equalsIgnoreCase("flip")) {
+                board = (Morris) board.flip();
+                System.out.println(board.isFlipped());
+            } else if (in.equalsIgnoreCase("new")) {
+                resetGame();
             }
             res = 0;
         } else if (in.matches(regex)) {
@@ -244,7 +245,7 @@ public class UI {
         System.out.print("Please enter the file e.g. <save.txt>: ");
         in = sc.next();
         try {
-        if (in.matches(filenameMatcher)) board.save(board, in);
+            if (in.matches(filenameMatcher)) board.save(board, in);
             System.out.println("Savefilepath: " + Paths.get(in).toAbsolutePath().toString());
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -275,6 +276,19 @@ public class UI {
         buffer += "<guide>: A Gameguide which helps you to understand how the game works\n";
         buffer += "<save>: saves the current game\n";
         buffer += "<load>: loads the file 'save.txt' in the current directory\n";
+        buffer += "<flip>: flip causes to switch the symbols of the stones\n";
+        buffer += "<new>: new game\n";
+        buffer += "1  -  -  -  -  -  2  -  -  -  -  -  3\n";
+        buffer += "|                 |                 |\n";
+        buffer += "|     9  -  -  - 10  -  -  - 11     |\n";
+        buffer += "|     |           |           |     |\n";
+        buffer += "|     |    17  - 18  - 19     |     |\n";
+        buffer += "8  - 16  - 24          20  - 12  -  4\n";
+        buffer += "|     |    23  - 22  - 21     |     |\n";
+        buffer += "|     |           |           |     |\n";
+        buffer += "|    15  -  -  - 14  -  -  - 13     |\n";
+        buffer += "|                 |                 |\n";
+        buffer += "7  -  -  -  -  -  6  -  -  -  -  -  5\n";
         System.out.println(buffer);
     }
 
@@ -289,6 +303,7 @@ public class UI {
         buffer += "If a mill is completed, the player which owns the mill can remove a stone of his opponent as long as the stone is not part of a mill\n";
         buffer += "If all opponent stones are in a mill, these millstones can be removed aswell\n";
         buffer += "The player who achieves to reduce the opponent stones under 4 wins\n";
+
         System.out.println(buffer);
     }
 
@@ -331,16 +346,15 @@ public class UI {
             String filenameMatcher = "^[\\w,\\s-]+\\.[A-Za-z]{3}$";
             System.out.print("Please enter the file e.g. <save.txt>: ");
             in = sc.next();
-            if (in.matches(filenameMatcher)){
+            if (in.matches(filenameMatcher)) {
                 board = board.load(in);
-            }
-            else {
+            } else {
                 System.out.println("invalid filename");
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        if (board.isWin() || board.isDraw()){
+        if (board.isWin() || board.isDraw()) {
             System.out.println(board.toString());
         }
     }
@@ -350,84 +364,83 @@ public class UI {
         Morris tmp = board.makeMove(board.streamMoves().findAny().get()).get();
         res = tmp;
 
-        CompletableFuture<Boolean> userInterupt = CompletableFuture.supplyAsync(()->{
+        CompletableFuture<Boolean> userInterupt = CompletableFuture.supplyAsync(() -> {
             System.out.println("\nEnter any input to interrupt the search\n");
             sc.hasNext();
             return true;
         });
 
-        CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(()->{
+        CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(() -> {
             System.out.println("Let me think about it");
-            ai.evaluateBestBoard(board,1);
+            ai.evaluateBestBoard(board, 1);
             StreamBoard b = ai.getBestMove();
             return b;
         });
-        CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) ->{
+        CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("What if i do...?");
             ai.evaluateBestBoard(board, 2);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) ->{
+        CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("...or that?");
             ai.evaluateBestBoard(board, 3);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) ->{
+        CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("This seems quite good");
             ai.evaluateBestBoard(board, 4);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) ->{
+        CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("oh boy!");
             ai.evaluateBestBoard(board, 5);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) ->{
+        CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("I need to think this through");
             ai.evaluateBestBoard(board, 6);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) ->{
+        CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.println("This is going to be a masterful move!");
             ai.evaluateBestBoard(board, 7);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
-        while (!userInterupt.isDone() && !cf7.isDone()){
-            if (cf1.isDone())res = cf1.join();
-            if (cf2.isDone())res = cf2.join();
-            if (cf3.isDone())res = cf3.join();
-            if (cf4.isDone())res = cf4.join();
-            if (cf5.isDone())res = cf5.join();
-            if (cf6.isDone())res = cf6.join();
-            if (cf7.isDone()){
+        while (!userInterupt.isDone() && !cf7.isDone()) {
+            if (cf1.isDone()) res = cf1.join();
+            if (cf2.isDone()) res = cf2.join();
+            if (cf3.isDone()) res = cf3.join();
+            if (cf4.isDone()) res = cf4.join();
+            if (cf5.isDone()) res = cf5.join();
+            if (cf6.isDone()) res = cf6.join();
+            if (cf7.isDone()) {
                 res = cf7.join();
                 System.out.println("I am done searching!");
                 userInterupt.cancel(true);
             }
         }
-        try{
-            if (cf1.cancel(true));
-            else if (cf2.cancel(true));
-            else if (cf3.cancel(true));
-            else if (cf4.cancel(true));
-            else if (cf5.cancel(true));
-            else if (cf6.cancel(true));
-            else if (cf7.cancel(true));
+        try {
+            if (cf1.cancel(true)) ;
+            else if (cf2.cancel(true)) ;
+            else if (cf3.cancel(true)) ;
+            else if (cf4.cancel(true)) ;
+            else if (cf5.cancel(true)) ;
+            else if (cf6.cancel(true)) ;
+            else if (cf7.cancel(true)) ;
             userInterupt.cancel(true);
-        }
-        catch (java.util.concurrent.CancellationException ce){
+        } catch (java.util.concurrent.CancellationException ce) {
             System.out.println("some cancel error with CompletableFutures");
         }
         sc = new Scanner(System.in);
