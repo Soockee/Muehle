@@ -1,5 +1,3 @@
-package ex;
-
 /**
  * Created by Björn Franke on 28.06.2017.
  */
@@ -7,11 +5,11 @@ public class AiThread extends Thread {
 
     private boolean alive;
     private Ai ki;
-    private ImmutableBoard board;
+    private StreamBoard board;
     private int depth;
-    private ImmutableBoard bestBoard;
+    private StreamBoard bestBoard;
 
-    public AiThread(ImmutableBoard board, int depth){
+    public AiThread(StreamBoard board, int depth){
         ki=new Ai();
         this.depth=depth;
         this.board=board;

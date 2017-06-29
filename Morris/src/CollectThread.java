@@ -1,11 +1,9 @@
-package ex;
-
 /**
  * Created by Björn Franke on 28.06.2017.
  */
 public class CollectThread extends Thread {
 
-    private ImmutableBoard bestBoard;
+    private StreamBoard bestBoard;
     private long end;
     private AiThread ki;
     private boolean userIsActive;
@@ -33,7 +31,7 @@ public class CollectThread extends Thread {
 
     }//run
 
-    public ImmutableBoard getBestBoard() {
+    public StreamBoard getBestBoard() {
         return bestBoard;
     }//getBestBoard
 
