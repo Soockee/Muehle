@@ -1,5 +1,3 @@
-package ex;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,7 +17,7 @@ public class Ai {
                 .range(0, depth)
                 .parallel()
                 .forEach(i -> {
-                    bestMove=iterativeDepthSearch(board,i);
+                    bestMove = iterativeDepthSearch(board,i);
                 });
     }//evaluateBestBoard
 
@@ -27,7 +25,7 @@ public class Ai {
         StreamBoard bestBoard = null;
         try {
             bestBoard = (StreamBoard) board
-                    .childs()
+                    .children()
                     .max(Comparator.comparingInt(item -> -alphaBeta((StreamBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
                     .orElseThrow(Error::new);
         } catch (Throwable throwable) {
@@ -71,7 +69,7 @@ public class Ai {
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<StreamBoard> listOfMoves = (List<StreamBoard>) board.childs().collect(Collectors.toList());
+        List<StreamBoard> listOfMoves = (List<StreamBoard>) board.children().collect(Collectors.toList());
         for (StreamBoard entry : listOfMoves) {
             board = entry;
             int val = -alphaBeta(board, depth - 1, -beta, -alpha);
@@ -101,7 +99,7 @@ public class Ai {
         }
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-            List<StreamBoard> container = (List<StreamBoard>) board.childs().collect(Collectors.toList());
+            List<StreamBoard> container = (List<StreamBoard>) board.children().collect(Collectors.toList());
             board = container.get(r.nextInt(container.size()));
             if (board.isWin()) {
                 return (board.isBeginnersTurn() == turn) ? 1 : -1;
