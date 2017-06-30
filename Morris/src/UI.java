@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class UI {
+public class UI implements UIInterface{
 
     /**********************************************************
      *  Fields:
@@ -29,7 +29,7 @@ public class UI {
         board = new Morris();
         in = "";
         sc = new Scanner(System.in);
-        ai = new Ai();
+        ai = new Ai(10);
     }
 
     /**********************************************************
@@ -168,22 +168,6 @@ public class UI {
     }
 
     /***********************************************************************************
-     * getValidMoves(Function<MorrisMove, Integer> f, int input):
-     *      -> returns a stream containing valid moves, which match with the input
-     *      -> the function determinates the filter (getTo, getFrom, getRemove)
-     *
-     **********************************************************************************/
-    Stream<MorrisMove> getValidMoves(int input, int check) {
-        if (check == 1) {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getFrom().get() == input);
-        } else if (check == 2) {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getTo() == input);
-        } else {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getRemove().get() == input);
-        }
-    }
-
-    /***********************************************************************************
      *  showOptions():
      *      ->returns a String which contains the Board representation and basic user commands
      *
@@ -207,7 +191,7 @@ public class UI {
         int res = -1;
         if (in.matches(regexForOptions)) {
             if (in.equals("0")) {
-                board = (Morris) getBestMove().get();
+                board = (Morris) getBestMove();
             } else if (in.equalsIgnoreCase("save")) {
                 save();
             } else if (in.equalsIgnoreCase("exit")) {
@@ -367,7 +351,7 @@ public class UI {
         }
     }
 
-    public Optional<StreamBoard> getBestMove() {
+    public StreamBoard getBestMove() {
         StreamBoard res;
         Morris tmp = board.makeMove(board.streamMoves().findAny().get()).get();
         res = tmp;
@@ -463,6 +447,6 @@ public class UI {
             System.out.println(" and remove " + thisMove.getRemove().get());
         }
         sc = new Scanner(System.in);
-        return Optional.of(res);
+        return res;
     }
 }

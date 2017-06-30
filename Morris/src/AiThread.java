@@ -10,7 +10,7 @@ public class AiThread extends Thread {
     private StreamBoard bestBoard;
 
     public AiThread(StreamBoard board, int depth){
-        ki=new Ai();
+        ki=new Ai(10);
         this.depth=depth;
         this.board=board;
         this.bestBoard=null;
