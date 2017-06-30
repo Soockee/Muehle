@@ -11,7 +11,10 @@ public class Ai {
 
     private ConcurrentHashMap<StreamBoard, TableEntry> ttable = new ConcurrentHashMap<>();
     private StreamBoard bestMove=null;
-
+    private int playCount;
+    public Ai (int playCount){
+        this.playCount = playCount;
+    }
     public void evaluateBestBoard(StreamBoard board, int depth) {
         IntStream
                 .range(0, depth)
@@ -125,7 +128,7 @@ public class Ai {
     }//simulatePlays
 
     public int evaluateBoard(StreamBoard board) {
-        int[] val = simulatePlays(board, 10);
+        int[] val = simulatePlays(board, playCount);
         return val[2] - val[0];
     }//evaluateBoard
 

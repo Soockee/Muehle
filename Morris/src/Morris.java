@@ -442,8 +442,10 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *
      *****************************************************************/
     @Override
+
+    //movesWithoutRemoving needs adjustment 30.06: raised to 25 in order to prevent isDraw():true too early
     public boolean isDraw() {
-        return phase != 1 && movesWithoutRemoving > 30;
+        return phase != 1 && movesWithoutRemoving > 25;
     }
 
     /******************************************************************
