@@ -37,15 +37,15 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         this.isFlipped = false;
     }
 
-    private Optional<T3> makeMoveIntern(Integer move) {
+    private T3 buildChild(Integer move) {
         int[] newBoard = Arrays.copyOf(this.board, 9);
         newBoard[move] = turn;
-        return Optional.of(new T3(newBoard, -turn, this, isFlipped));
+        return new T3(newBoard, -turn, this, isFlipped);
     }
 
     @Override
     public Optional<T3> makeMove(Integer move) {
-        return children().filter(t3 -> t3.getMove().get().equals(move)).findAny();
+        return children().filter(t3 -> t3.getMove().get().equals(move)).findAny(); // always a value present, empty boards can´t be children
     }
 
     @Override
@@ -59,12 +59,10 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
 
     @Override
     public List<Integer> getHistory() {
-        List<Integer> moves = Stream.iterate(this, t3 -> t3.parent != null, t3->  t3.parent)
+        return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
                 .map(T3::getMove)
                 .map(Optional::get)
-                .collect(Collectors.toList());
-        return IntStream.rangeClosed(1, moves.size()).mapToObj(operand -> moves.get(moves.size() - operand))
-                .collect(Collectors.toList());
+                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
     }
 
     /*@Override
@@ -109,15 +107,11 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return isFlipped;
     }
 
+    @Override
     public Stream<T3> children() {
         return IntStream.range(0, 9)
                 .filter(pos -> board[pos] == 0)
-                .mapToObj(this::makeMoveIntern)
-                .map(Optional::get);
-    }
-
-    public List<Integer> moves() {
-        return streamMoves().boxed().collect(Collectors.toList());
+                .mapToObj(this::buildChild);
     }
 
     @Override
@@ -141,13 +135,13 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .collect(Collectors.joining("\n"));
     }
 
-     public void save(T3 board, String name) throws IOException {
+    public void save(T3 board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
-     public void save(T3 board, Path path) throws IOException {
+    public void save(T3 board, Path path) throws IOException {
         BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory() .stream()
+        out.write(board.getHistory().stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(","))
         );
@@ -175,6 +169,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .map(s -> s.split(","))
                 .flatMap(Arrays::stream)
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
         if (moves.getLast().toLowerCase().equals("f")) {
             moves.removeLast();
@@ -183,9 +178,10 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         for (Integer pos : moves.stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toList())) {
-            if (load.isValidMove(pos)) {
-                load = load.makeMoveIntern(pos).get();
-            } else throw new IOException("File contains invalid Moves");
+            load = load.makeMove(pos).orElseThrow(() -> new IOException("File contains invalid Moves"));
+            /*if (load.isValidMove(pos)) {
+                load = load.buildChild(pos).get();
+            } else throw new IOException("File contains invalid Moves");*/
         }
         return load;
     }
