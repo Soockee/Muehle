@@ -70,8 +70,7 @@ public class UI {
      **************************************************/
     public void checkInput() {
         boolean valid = true;
-        int phase = board.getPhase();
-        if (phase == 1) {
+        if (board.getHistory().size() < 18) {
             valid = movePhaseOne();
         } else {
             valid = movePhaseTwoToFive();
@@ -85,7 +84,7 @@ public class UI {
 
     public boolean movePhaseTwoToFive() {
         int to;
-        Integer from = null;
+        Integer from;
         Integer remove = null;
         final Integer removeMove;
         final Integer fromMove;
@@ -355,7 +354,16 @@ public class UI {
             System.out.println(e.getMessage());
         }
         if (board.isWin() || board.isDraw()) {
+            String regex = "^(y)|(n)$";
             System.out.println(board.toString());
+            System.out.println("\nDo you want to undo a move?? type: <y> / <n>");
+            in = sc.next();
+            in = in.toLowerCase();
+            while (!in.matches(regex)) {
+                System.out.println("invalid command. Please type: <y> or <n>");
+                in = sc.next();
+            }
+            if (in.equalsIgnoreCase("y"))board = (Morris)board.parent();
         }
     }
 
@@ -371,49 +379,49 @@ public class UI {
         });
 
         CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(() -> {
-            System.out.println("Let me think about it");
+            System.out.print("Let me think about it...");
             ai.evaluateBestBoard(board, 1);
             StreamBoard b = ai.getBestMove();
             return b;
         });
         CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("What if i do...?");
+            System.out.print("\tWhat if i do...");
             ai.evaluateBestBoard(board, 2);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("...or that?");
+            System.out.print("\tOr that...");
             ai.evaluateBestBoard(board, 3);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("This seems quite good");
+            System.out.print("\tThis seems quite good...");
             ai.evaluateBestBoard(board, 4);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("oh boy!");
+            System.out.print("\tOh boy!...");
             ai.evaluateBestBoard(board, 5);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("I need to think this through");
+            System.out.print("\tI need to think this through...");
             ai.evaluateBestBoard(board, 6);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("This is going to be a masterful move!");
+            System.out.print("\tThis is going to be a masterful move!");
             ai.evaluateBestBoard(board, 7);
             comfut.complete(ai.getBestMove());
             return comfut;
@@ -442,6 +450,17 @@ public class UI {
             userInterupt.cancel(true);
         } catch (java.util.concurrent.CancellationException ce) {
             System.out.println("some cancel error with CompletableFutures");
+        }
+        MorrisMove thisMove = ((MorrisMove)res.getMove().get());
+        if (thisMove.getFrom().isPresent()){
+            System.out.print("I move from " + thisMove.getFrom().get());
+            System.out.print(" to " +thisMove.getTo());
+        }
+        else{
+            System.out.println("I put my stone on "+ thisMove.getTo());
+        }
+        if (thisMove.getRemove().isPresent()){
+            System.out.println(" and remove " + thisMove.getRemove().get());
         }
         sc = new Scanner(System.in);
         return Optional.of(res);
