@@ -442,7 +442,6 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
      *
      *****************************************************************/
     @Override
-    // evt. movesWithoutRemoving hochschrauben. 20 ist sehr niedrig
     public boolean isDraw() {
         return phase != 1 && movesWithoutRemoving > 30;
     }

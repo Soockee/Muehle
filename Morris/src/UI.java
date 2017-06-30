@@ -70,8 +70,7 @@ public class UI {
      **************************************************/
     public void checkInput() {
         boolean valid = true;
-        int phase = board.getPhase();
-        if (phase == 1) {
+        if (board.getHistory().size() < 18) {
             valid = movePhaseOne();
         } else {
             valid = movePhaseTwoToFive();
@@ -85,7 +84,7 @@ public class UI {
 
     public boolean movePhaseTwoToFive() {
         int to;
-        Integer from = null;
+        Integer from;
         Integer remove = null;
         final Integer removeMove;
         final Integer fromMove;
