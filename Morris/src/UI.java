@@ -3,13 +3,13 @@
  * Last edit: 29.06.2017
  ************************************************************/
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class UI {
+public class UI implements UIInterface{
 
     /**********************************************************
      *  Fields:
@@ -29,7 +29,7 @@ public class UI {
         board = new Morris();
         in = "";
         sc = new Scanner(System.in);
-        ai = new Ai();
+        ai = new Ai(10);
     }
 
     /**********************************************************
@@ -70,8 +70,7 @@ public class UI {
      **************************************************/
     public void checkInput() {
         boolean valid = true;
-        int phase = board.getPhase();
-        if (phase == 1) {
+        if (board.getHistory().size() < 18) {
             valid = movePhaseOne();
         } else {
             valid = movePhaseTwoToFive();
@@ -85,7 +84,7 @@ public class UI {
 
     public boolean movePhaseTwoToFive() {
         int to;
-        Integer from = null;
+        Integer from;
         Integer remove = null;
         final Integer removeMove;
         final Integer fromMove;
@@ -169,22 +168,6 @@ public class UI {
     }
 
     /***********************************************************************************
-     * getValidMoves(Function<MorrisMove, Integer> f, int input):
-     *      -> returns a stream containing valid moves, which match with the input
-     *      -> the function determinates the filter (getTo, getFrom, getRemove)
-     *
-     **********************************************************************************/
-    Stream<MorrisMove> getValidMoves(int input, int check) {
-        if (check == 1) {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getFrom().get() == input);
-        } else if (check == 2) {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getTo() == input);
-        } else {
-            return board.streamMoves().filter(morrisMove -> morrisMove.getRemove().get() == input);
-        }
-    }
-
-    /***********************************************************************************
      *  showOptions():
      *      ->returns a String which contains the Board representation and basic user commands
      *
@@ -208,7 +191,7 @@ public class UI {
         int res = -1;
         if (in.matches(regexForOptions)) {
             if (in.equals("0")) {
-                board = (Morris) getBestMove().get();
+                board = (Morris) getBestMove();
             } else if (in.equalsIgnoreCase("save")) {
                 save();
             } else if (in.equalsIgnoreCase("exit")) {
@@ -355,11 +338,20 @@ public class UI {
             System.out.println(e.getMessage());
         }
         if (board.isWin() || board.isDraw()) {
+            String regex = "^(y)|(n)$";
             System.out.println(board.toString());
+            System.out.println("\nDo you want to undo a move?? type: <y> / <n>");
+            in = sc.next();
+            in = in.toLowerCase();
+            while (!in.matches(regex)) {
+                System.out.println("invalid command. Please type: <y> or <n>");
+                in = sc.next();
+            }
+            if (in.equalsIgnoreCase("y"))board = (Morris)board.parent();
         }
     }
 
-    public Optional<StreamBoard> getBestMove() {
+    public StreamBoard getBestMove() {
         StreamBoard res;
         Morris tmp = board.makeMove(board.streamMoves().findAny().get()).get();
         res = tmp;
@@ -371,49 +363,49 @@ public class UI {
         });
 
         CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(() -> {
-            System.out.println("Let me think about it");
+            System.out.print("Let me think about it...");
             ai.evaluateBestBoard(board, 1);
             StreamBoard b = ai.getBestMove();
             return b;
         });
         CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("What if i do...?");
+            System.out.print("\tWhat if i do...");
             ai.evaluateBestBoard(board, 2);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("...or that?");
+            System.out.print("\tOr that...");
             ai.evaluateBestBoard(board, 3);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("This seems quite good");
+            System.out.print("\tThis seems quite good...");
             ai.evaluateBestBoard(board, 4);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("oh boy!");
+            System.out.print("\tOh boy!...");
             ai.evaluateBestBoard(board, 5);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("I need to think this through");
+            System.out.print("\tI need to think this through...");
             ai.evaluateBestBoard(board, 6);
             comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) -> {
             CompletableFuture comfut = new CompletableFuture();
-            System.out.println("This is going to be a masterful move!");
+            System.out.print("\tThis is going to be a masterful move!");
             ai.evaluateBestBoard(board, 7);
             comfut.complete(ai.getBestMove());
             return comfut;
@@ -443,7 +435,18 @@ public class UI {
         } catch (java.util.concurrent.CancellationException ce) {
             System.out.println("some cancel error with CompletableFutures");
         }
+        MorrisMove thisMove = ((MorrisMove)res.getMove().get());
+        if (thisMove.getFrom().isPresent()){
+            System.out.print("I move from " + thisMove.getFrom().get());
+            System.out.print(" to " +thisMove.getTo());
+        }
+        else{
+            System.out.println("I put my stone on "+ thisMove.getTo());
+        }
+        if (thisMove.getRemove().isPresent()){
+            System.out.println(" and remove " + thisMove.getRemove().get());
+        }
         sc = new Scanner(System.in);
-        return Optional.of(res);
+        return res;
     }
 }

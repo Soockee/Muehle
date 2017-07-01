@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -11,7 +13,10 @@ public class Ai {
 
     private ConcurrentHashMap<StreamBoard, TableEntry> ttable = new ConcurrentHashMap<>();
     private StreamBoard bestMove=null;
-
+    private int playCount;
+    public Ai (int playCount){
+        this.playCount = playCount;
+    }
     public void evaluateBestBoard(StreamBoard board, int depth) {
         IntStream
                 .range(0, depth)
@@ -125,7 +130,7 @@ public class Ai {
     }//simulatePlays
 
     public int evaluateBoard(StreamBoard board) {
-        int[] val = simulatePlays(board, 10);
+        int[] val = simulatePlays(board, playCount);
         return val[2] - val[0];
     }//evaluateBoard
 
