@@ -1,6 +1,9 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -13,8 +16,18 @@ public class MorrisMove {
     private Integer remove;
 
     public static Optional<MorrisMove> parseMove(String input, boolean isPhase1) {
-        if (!input.matches("\\s*(?:(\\d{1,2})\\s*-)?\\s*(\\d{1,2})\\s*(?:-\\s*(\\d{1,2}))?\\s*"))
+        Pattern p = Pattern.compile("\\s*(?:([01]\\d|2[0123])\\s*-)?\\s*([01]\\d|2[0123])\\s*(?:-\\s*([01]\\d|2[0123]))?\\s*", Pattern.COMMENTS);
+        Matcher m = p.matcher(input);
+        if (!m.matches()) {
             return Optional.empty();
+        }
+        /*return Optional.of(isPhase1 ?
+                new MorrisMove(null,
+                        Integer.parseInt(m.group(2)),
+                        m.group(3) == null ? null : Integer.parseInt(m.group(3))) :
+                new MorrisMove(m.group(1) == null ? null : Integer.parseInt(m.group(1)),
+                        Integer.parseInt(m.group(2)),
+                        m.group(3) == null ? null : Integer.parseInt(m.group(3))));*/
         List<Integer> parts = Arrays.stream(input.split("-"))
                 .map(String::trim)
                 .map(Integer::parseInt)
@@ -22,12 +35,12 @@ public class MorrisMove {
         switch (parts.size()) {
             case 3:
                 return Optional.of(MorrisMove.moveOrJumpAndRemove(parts.get(0), parts.get(1), parts.get(2)));
-            case 2:
+            case 1:
+                return Optional.of(MorrisMove.place(parts.get(0)));
+            default:
                 return Optional.of(isPhase1 ?
                         MorrisMove.placeAndRemove(parts.get(0), parts.get(1)) :
                         MorrisMove.moveOrJump(parts.get(0), parts.get(1)));
-            default:
-                return Optional.of(MorrisMove.place(parts.get(0)));
         }
     }
 
@@ -49,7 +62,7 @@ public class MorrisMove {
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        return Objects.hash(from, to, remove);
     }
 
     @Override
@@ -66,28 +79,29 @@ public class MorrisMove {
         this.remove = remove;
     }
 
-    public Optional<Integer> getFrom() {
+    Optional<Integer> getFrom() {
         return Optional.ofNullable(from);
     }
 
-    public int getTo() {
+    int getTo() {
         return to;
     }
 
-    public Optional<Integer> getRemove() {
+    Optional<Integer> getRemove() {
         return Optional.ofNullable(remove);
     }
 
     @Override
-    public String toString() {
+    public String toString() { // used for saving/loading
         return (getFrom().isPresent() ? String.format("%02d", from) + "-" : "")
                 + String.format("%02d", to)
                 + (getRemove().isPresent() ? "-" + String.format("%02d", remove) : "");
     }
-    public String toStringUser() {
-        return (getFrom().isPresent() ? String.format("%02d", from+1) + "-" : "")
-                + String.format("%02d", to+1)
-                + (getRemove().isPresent() ? "-" + String.format("%02d", remove+1) : "");
+
+    public String toStringUser() { // used in console interaction
+        return (getFrom().isPresent() ? String.format("%02d", from + 1) + "-" : "")
+                + String.format("%02d", to + 1)
+                + (getRemove().isPresent() ? "-" + String.format("%02d", remove + 1) : "");
     }
 }
 

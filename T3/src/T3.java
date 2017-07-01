@@ -165,20 +165,24 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     @Override
     public T3 load(Path path) throws IOException {
         T3 load = new T3();
-        LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
-                .map(s -> s.split(","))
-                .flatMap(Arrays::stream)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toCollection(LinkedList::new));
+        LinkedList<String> moves;
+        try (Stream<String> lines = Files.lines(path, StandardCharsets.UTF_8)) {
+            moves = lines
+                    .map(s -> s.split(","))
+                    .flatMap(Arrays::stream)
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toCollection(LinkedList::new));
+        }
         if (moves.getLast().toLowerCase().equals("f")) {
             moves.removeLast();
             load = (T3) load.flip();
         }
-        for (Integer pos : moves.stream()
-                .map(Integer::parseInt)
+        for (Optional<Integer> pos : moves.stream()
+                .map(this::parseMove)
                 .collect(Collectors.toList())) {
-            load = load.makeMove(pos).orElseThrow(() -> new IOException("File contains invalid Moves"));
+            load = load.makeMove(pos.orElseThrow(() -> new IOException("File isn't in the expected standard")))
+                    .orElseThrow(() -> new IOException("File contains invalid Moves"));
             /*if (load.isValidMove(pos)) {
                 load = load.buildChild(pos).get();
             } else throw new IOException("File contains invalid Moves");*/
@@ -186,8 +190,13 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return load;
     }
 
-    private boolean isValidMove(Integer pos) {
-        return streamMoves().anyMatch(move -> move == pos);
+    private Optional<Integer> parseMove(String move) {
+        if(move.length() > 1) return Optional.empty();
+        try {
+            return Optional.of(Integer.parseInt(move));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override

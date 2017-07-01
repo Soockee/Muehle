@@ -4,7 +4,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -496,17 +499,20 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
     @Override
     public Morris load(Path path) throws IOException {
         Morris load = new Morris();
-        LinkedList<String> moveParts = Files.lines(path, StandardCharsets.UTF_8)
-                .filter(s -> !s.isEmpty())
-                .map(s -> s.split(","))
-                .map(Arrays::stream)
-                .flatMap(stringStream -> stringStream)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toCollection(LinkedList::new));
+        LinkedList<String> moveParts;
+        try (Stream<String> lines = Files.lines(path, StandardCharsets.UTF_8)) {
+            moveParts = lines
+                    .filter(s -> !s.isEmpty())
+                    .map(s -> s.split(","))
+                    .map(Arrays::stream)
+                    .flatMap(stringStream -> stringStream)
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toCollection(LinkedList::new));
+        }
         if (moveParts.getLast().toLowerCase().equals("f")) {
             moveParts.removeLast();
-            load =(Morris) load.flip();
+            load = (Morris) load.flip();
         }
         for (String movePart : moveParts) {
             MorrisMove move = MorrisMove.parseMove(movePart, load.phase == 1)
@@ -514,10 +520,6 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
             load = load.makeMove(move).orElseThrow(() -> new IOException("File contains illegal Moves"));
         }
         return load;
-    }
-
-    private boolean isValidMove(MorrisMove move) {
-        return streamMoves().anyMatch(morrisMove -> morrisMove.equals(move));
     }
 
     @Override
