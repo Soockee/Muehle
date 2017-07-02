@@ -30,6 +30,7 @@ public class Ai {
                 });
     }//evaluateBestBoard
 
+
     public StreamBoard iterativeDepthSearch(StreamBoard board, int depth) {
         ArrayList<StreamBoard> list;
 
@@ -47,16 +48,17 @@ public class Ai {
     }//iterativeDepthSearch
 
     public ArrayList<StreamBoard> getBoards(TreeMap<Integer, StreamBoard> map) {
+
         ArrayList<StreamBoard> list = new ArrayList<>();
+
         for (Integer idx : map.keySet()) {
             list.add(map.get(idx));
         }
         return list;
     }
 
-    /*
-    TreeMap<Integer, String> maps =new TreeMap<>(Comparator.reverseOrder());
-       StreamBoard bestBoard = null;
+    public StreamBoard altIterativeDepthSearch (StreamBoard board, int depth){
+        StreamBoard bestBoard = null;
         try {
             bestBoard = (StreamBoard) board
                     .children()
@@ -66,7 +68,8 @@ public class Ai {
             throwable.printStackTrace();
         }
         return bestBoard;
-     */
+    }
+
 
     public int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
