@@ -1,5 +1,3 @@
-
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -7,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,23 +54,13 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return IntStream.range(0, 9).filter(i -> board[i] == 0);
     }
 
-    @Override
+    /*@Override
     public List<Integer> getHistory() {
         return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
                 .map(T3::getMove)
                 .map(Optional::get)
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-    }
-
-    /*@Override
-    public List<Integer> history() {
-        return Stream.iterate(this, board ->  board.parent() != null, t3 -> (T3) t3.parent())
-                .map(StreamBoard::getMove)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }//ordered from beginning to most recent Move
-
-   */
+    }*/
 
     @Override
     public boolean isWin() {
@@ -134,7 +121,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                         .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
     }
-
+    /*
     public void save(T3 board, String name) throws IOException {
         save(board, Paths.get(name));
     }
@@ -151,7 +138,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         out.write("\n");
         out.close();
     }
-
+    */
     @Override
     public T3 load(String name) throws IOException {
         return load(Paths.get(name));
@@ -191,9 +178,11 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     }
 
     private Optional<Integer> parseMove(String move) {
-        if(move.length() > 1) return Optional.empty();
+        //if(move.length() > 1) return Optional.empty();
         try {
-            return Optional.of(Integer.parseInt(move));
+            int n = Integer.parseInt(move);
+            if(n < 0 || n > 8) return Optional.empty();
+            return Optional.of(n);
         } catch (Exception e) {
             return Optional.empty();
         }

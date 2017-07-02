@@ -9,12 +9,14 @@ import java.util.stream.Stream;
 
 public interface StreamBoard<Move> extends SaveableBoard<Move> {
 
+    @SuppressWarnings("unchecked")
     default Optional<? extends StreamBoard<Move>> makeMove(Move move) {// may be changed to Optional later
         return children()
                 .filter(board -> board.getMove().equals(move))
                 .findAny();
     }
 
+    @SuppressWarnings("unchecked")
     default Optional<? extends StreamBoard<Move>> makeMove(Move... moves) {
         Optional<? extends StreamBoard<Move>> res = Optional.of(this);
         for (Move move : moves) {
@@ -25,8 +27,8 @@ public interface StreamBoard<Move> extends SaveableBoard<Move> {
     }
 
     default List<Move> getHistory() {
-        return Stream.iterate(this, board -> board.parent() != null,StreamBoard::parent)
-                .sequential()
+        return Stream.iterate(this, board -> board.parent() != null, StreamBoard::parent)
+                .sequential() // ???
                 .map(StreamBoard::getMove)
                 .map(Optional::get)
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);

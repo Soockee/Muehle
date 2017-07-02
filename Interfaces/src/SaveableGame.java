@@ -10,23 +10,23 @@ import java.util.stream.Collectors;
  * Created by Paul Krappatsch on 14.06.2017.
  */
 
-public interface SaveableGame<SaveableBoard> {
+public interface SaveableGame</*SaveableBoard*/ S extends SaveableBoard<?>> {
 
-    void save(SaveableBoard board, String name) throws IOException;
+    /*void save(SaveableBoard board, String name) throws IOException;
 
     void save(SaveableBoard board, Path path) throws IOException;
 
     SaveableBoard load(String name) throws IOException;
 
-    SaveableBoard load(Path path) throws IOException;
+    SaveableBoard load(Path path) throws IOException;*/
 
-    /*default void save(S board, String name) throws IOException {
+    default void save(S board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
     default void save(S board, Path path) throws IOException {
         BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory() .stream()
+        out.write(board.getHistory().stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(","))
         );
@@ -39,5 +39,5 @@ public interface SaveableGame<SaveableBoard> {
 
     SaveableBoard load(String name) throws IOException;
 
-    SaveableBoard load(Path path) throws IOException;*/
+    SaveableBoard load(Path path) throws IOException;
 }

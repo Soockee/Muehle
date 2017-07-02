@@ -1,4 +1,3 @@
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -6,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -129,13 +127,13 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
         return new Morris(newBoard, -turn, newMovesWithoutRemoving, this, newPhase, isFlipped);
     }
 
-    @Override
+    /*@Override
     public List<MorrisMove> getHistory() {
         return Stream.iterate(this, morris -> morris.parent != null, m -> m.parent)
                 .map(Morris::getMove)
                 .map(Optional::get)
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-    }
+    }*/
 
     private Morris buildChildPhaseMoveAndJump(MorrisMove morrisMove) {
         int[] newBoard = Arrays.copyOf(board, 24);
@@ -448,7 +446,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
 
     //movesWithoutRemoving needs adjustment 30.06: raised to 25 in order to prevent isDraw():true too early
     public boolean isDraw() {
-        return phase != 1 && movesWithoutRemoving > 25;
+        return phase != 1 && (movesWithoutRemoving > 25 || (numberOfStones(turn) == 3 && numberOfStones(-turn) == 3));
     }
 
     /******************************************************************
@@ -461,22 +459,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
         return new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, !isFlipped);
     }
 
-    /*@Override
-    public List<MorrisMove> history() {
-        List<Integer> revHistory =  Stream.iterate(this, board -> board.parent() != null, StreamBoard::parent)
-                .map(StreamBoard::getMove)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-        return IntStream.rangeClosed(1, revHistory.size())
-                .mapToObj(value -> revHistory.get(revHistory.size()-value))
-                .collect(Collectors.toList());
-    }//ordered from beginning to most recent Move
-
-    /******************************************************************
-     *
-     *
-     *****************************************************************/
-    public void save(Morris board, String name) throws IOException {
+    /*public void save(Morris board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
@@ -491,7 +474,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
         }
         out.write("\n");
         out.close();
-    }
+    }*/
 
     @Override
     public Morris load(String name) throws IOException {

@@ -16,7 +16,7 @@ public class MorrisMove {
     private Integer remove;
 
     public static Optional<MorrisMove> parseMove(String input, boolean isPhase1) {
-        Pattern p = Pattern.compile("\\s*(?:([01]\\d|2[0123])\\s*-)?\\s*([01]\\d|2[0123])\\s*(?:-\\s*([01]\\d|2[0123]))?\\s*", Pattern.COMMENTS);
+        Pattern p = Pattern.compile("\\s*(?:([01]\\d|2[0123]|\\d)\\s*-)?\\s*([01]\\d|2[0123]|\\d)\\s*(?:-\\s*([01]\\d|2[0123]|\\d))?\\s*", Pattern.COMMENTS);
         Matcher m = p.matcher(input);
         if (!m.matches()) {
             return Optional.empty();
@@ -32,9 +32,10 @@ public class MorrisMove {
                 .map(String::trim)
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
+        if(parts.size() > parts.stream().distinct().count()) return Optional.empty();
         switch (parts.size()) {
             case 3:
-                return Optional.of(MorrisMove.moveOrJumpAndRemove(parts.get(0), parts.get(1), parts.get(2)));
+                return isPhase1 ? Optional.empty() :  Optional.of(MorrisMove.moveOrJumpAndRemove(parts.get(0), parts.get(1), parts.get(2)));
             case 1:
                 return Optional.of(MorrisMove.place(parts.get(0)));
             default:
