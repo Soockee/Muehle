@@ -9,23 +9,54 @@ import java.util.stream.IntStream;
  */
 public class Ai {
 
-    private ConcurrentHashMap<StreamBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private StreamBoard bestMove=null;
+    private ConcurrentHashMap<StreamBoard, TableEntry> ttable;
+    private TreeMap <Integer, StreamBoard> heuristic;
+    private StreamBoard bestMove;
     private int playCount;
-    public Ai (int playCount){
+
+    public Ai(int playCount) {
         this.playCount = playCount;
+        ttable = new ConcurrentHashMap<>();
+        heuristic = null;
+        bestMove = null;
     }
+
     public void evaluateBestBoard(StreamBoard board, int depth) {
+        heuristic =null;
         IntStream
                 .range(0, depth)
-                .parallel()
                 .forEach(i -> {
-                    bestMove = iterativeDepthSearch(board,i);
+                    bestMove = iterativeDepthSearch(board, i);
                 });
     }//evaluateBestBoard
 
-    public StreamBoard iterativeDepthSearch(StreamBoard board, int depth)  {
-        StreamBoard bestBoard = null;
+    public StreamBoard iterativeDepthSearch(StreamBoard board, int depth) {
+        ArrayList<StreamBoard> list;
+
+        if (heuristic == null) {
+            list = (ArrayList<StreamBoard>) board.children().collect(Collectors.toList());
+        } else {
+            list = getBoards(heuristic);
+        }
+        heuristic =new TreeMap<>();
+        for (int i = 0; i < list.size(); i++) {
+            heuristic.put(-alphaBeta(list.get(i), depth, Integer.MIN_VALUE, Integer.MAX_VALUE), list.get(i));
+        }
+
+        return heuristic.get(heuristic.firstKey());
+    }//iterativeDepthSearch
+
+    public ArrayList<StreamBoard> getBoards(TreeMap<Integer, StreamBoard> map) {
+        ArrayList<StreamBoard> list = new ArrayList<>();
+        for (Integer idx : map.keySet()) {
+            list.add(map.get(idx));
+        }
+        return list;
+    }
+
+    /*
+    TreeMap<Integer, String> maps =new TreeMap<>(Comparator.reverseOrder());
+       StreamBoard bestBoard = null;
         try {
             bestBoard = (StreamBoard) board
                     .children()
@@ -35,7 +66,7 @@ public class Ai {
             throwable.printStackTrace();
         }
         return bestBoard;
-    }//iterativeDepthSearch
+     */
 
     public int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
@@ -132,7 +163,7 @@ public class Ai {
         return val[2] - val[0];
     }//evaluateBoard
 
-    public StreamBoard getBestMove(){
+    public StreamBoard getBestMove() {
         return bestMove;
     }
 }//class
