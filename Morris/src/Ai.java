@@ -23,10 +23,11 @@ public class Ai {
 
     public void evaluateBestBoard(StreamBoard board, int depth) {
         heuristic = null;
+
         IntStream
                 .range(0, depth)
                 .forEach(i -> {
-                    bestMove = altIterativeDepthSearch (board, i);
+                    bestMove = altIterativeDepthSearch(board, i);
                 });
 
     }//evaluateBestBoard
@@ -34,6 +35,7 @@ public class Ai {
 
     public StreamBoard iterativeDepthSearch(StreamBoard board, int depth) {
         ArrayList<StreamBoard> list;
+        ttable = new ConcurrentHashMap<>();
 
         if (heuristic == null) {
             list = (ArrayList<StreamBoard>) board.children().collect(Collectors.toList());
@@ -54,7 +56,7 @@ public class Ai {
         return heuristic.get(heuristic.lastKey()).get(0);
     }//new iterativDepthSearch-Method
 
-    public ArrayList<StreamBoard> getBoards(TreeMap<Integer, List<StreamBoard>> map) {
+    private ArrayList<StreamBoard> getBoards(TreeMap<Integer, List<StreamBoard>> map) {
 
         ArrayList<StreamBoard> list = new ArrayList<>();
 
@@ -67,7 +69,7 @@ public class Ai {
 
     public StreamBoard altIterativeDepthSearch(StreamBoard board, int depth) {
         StreamBoard bestBoard = null;
-        ttable=new ConcurrentHashMap<>();
+        ttable = new ConcurrentHashMap<>();
         try {
             bestBoard = (StreamBoard) board
                     .children()
@@ -80,7 +82,7 @@ public class Ai {
     }//old iterativDepthSearch-Method
 
 
-    public int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
+    private int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
 
 
@@ -103,18 +105,18 @@ public class Ai {
         //Evaluierung der Blätter,
         if (board.isWin()) {
             int val = -1000 + depth;
-            addToTable(board,val,alphaStart,beta);
+            addToTable(board, val, alphaStart, beta);
             return val;
         }//Gewinnfall
         if (board.isDraw()) {
             int val = 0;
-            addToTable(board,val,alphaStart,beta);
+            addToTable(board, val, alphaStart, beta);
             return val;
         }//Unentschieden
         if (depth == 0) {
             int val = evaluateBoard(board);
-            addToTable(board,val,alphaStart,beta);
-            return val*-1;
+            addToTable(board, val, alphaStart, beta);
+            return val * -1;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
@@ -130,12 +132,12 @@ public class Ai {
             if (alpha >= beta) break;
         }//for
 
-        addToTable(board,bestVal,alphaStart,beta);
+        addToTable(board, bestVal, alphaStart, beta);
 
         return bestVal;
     }//alphaBeta
 
-    public void addToTable(StreamBoard board,int bestVal,int alphaStart, int beta){
+    public void addToTable(StreamBoard board, int bestVal, int alphaStart, int beta) {
         if (bestVal <= alphaStart) {
             ttable.put(board, new TableEntry(bestVal, 2));
         } else if (bestVal >= beta) {
