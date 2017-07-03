@@ -11,10 +11,11 @@ public class App {
         System.out.println("    <1>:  Nine mans Morris");
         System.out.println("    <2>:  TicTacToe");
         System.out.println("or type <exit> to leave the application");
-        String selection = sc.next();
-        selection = selection.trim();
+
         boolean success = false;
         while (!success){
+            String selection = sc.next();
+            selection = selection.trim();
             if (selection.equals("1")){
                 UI uiNNM = new UI();
                 uiNNM.play();
