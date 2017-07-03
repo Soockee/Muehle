@@ -148,6 +148,7 @@ So sieht der Programmdialog mit dem T3-Spiel aus:
 So sieht der Programmdialog mit dem Mühle-Spiel aus:
 
 * Hilfe Ausgabe Hier zu sehen ist das Kommando '?'
+
 ```
 Enter position to set stone: ?
 You can enter the following commands: 
@@ -172,7 +173,6 @@ You can enter the following commands:
 |    15  -  -  - 14  -  -  - 13     |
 |                 |                 |
 7  -  -  -  -  -  6  -  -  -  -  -  5
-
 ```
 
 * Setzphase: Stein in der Setzphase setze
@@ -191,15 +191,15 @@ X  -  -  -  -  -  .  -  -  -  -  -  .
 .  -  -  -  -  -  .  -  -  -  -  -  .
 [0: Computer move, ?: Help]
 Enter position to set stone: 
-
 ```
-* Laden: laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
-* 
+
+* Laden:laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
+
+
 ```
 [0: Computer move, ?: Help]
 Enter position to set stone: load
 Please enter the file e.g. <save.txt>: moves_enabled.txt
-
 X  -  -  -  -  -  O  -  -  -  -  -  X
 |                 |                 |
 |     X  -  -  -  O  -  -  -  X     |
@@ -216,6 +216,8 @@ Enter Stone to move:
 ```
 
 * Zugphase: Spielstein in der Zugphase bewegen mit entfernen. Falscheingabe verusacht erneute Aufforderung erneuter Eingabe und zeigt mögliche Spielzüge an
+
+
 ```
 [0: Computer move, ?: Help]
 Enter Stone to move: 21
@@ -231,7 +233,6 @@ O  -  O  -  .           X  -  O  -  O
 |     X  -  -  -  O  -  -  -  X     |
 |                 |                 |
 X  -  -  -  -  -  X  -  -  -  -  -  O
-
 [0: Computer move, ?: Help]
 Enter Stone to move: 22
 Enter position to move stone: 2
@@ -249,12 +250,10 @@ O  -  O  -  .           X  -  O  -  O
 |     X  -  -  -  O  -  -  -  X     |
 |                 |                 |
 X  -  -  -  -  -  X  -  -  -  -  -  O
-
 [0: Computer move, ?: Help]
 Enter Stone to move: 23
 Enter position to move stone: 24
-Enter stone to remove: 7
-
+Enter stone to remove: 
 X  -  -  -  -  -  O  -  -  -  -  -  X
 |                 |                 |
 |     X  -  -  -  O  -  -  -  X     |
@@ -266,7 +265,6 @@ O  -  O  -  O           X  -  O  -  O
 |     X  -  -  -  O  -  -  -  X     |
 |                 |                 |
 .  -  -  -  -  -  X  -  -  -  -  -  O
-
 [0: Computer move, ?: Help]
 Enter Stone to move: 
 ```
@@ -310,7 +308,6 @@ Enter Stone to move:
 ```
 O Won!
 Endgame: 
-
 X  -  -  -  -  -  O  -  -  -  -  -  X
 |                 |                 |
 |     X  -  -  -  O  -  -  -  X     |
@@ -322,8 +319,6 @@ O  -  O  -  .           .  -  O  -  O
 |     X  -  -  -  O  -  -  -  X     |
 |                 |                 |
 X  -  -  -  -  -  O  -  -  -  -  -  X
-
-
 Do you want to save the game? type: <y> / <n>
 y
 Please enter the file e.g. <save.txt>: ex.txt
