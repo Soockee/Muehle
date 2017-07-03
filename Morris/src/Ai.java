@@ -51,7 +51,7 @@ public class Ai {
             heuristic.put(val, con);
         }//for
 
-        return heuristic.get(heuristic.firstKey()).get(0);
+        return heuristic.get(heuristic.lastKey()).get(0);
     }//new iterativDepthSearch-Method
 
     public ArrayList<StreamBoard> getBoards(TreeMap<Integer, List<StreamBoard>> map) {
@@ -114,7 +114,7 @@ public class Ai {
         if (depth == 0) {
             int val = evaluateBoard(board);
             addToTable(board,val,alphaStart,beta);
-            return val;
+            return val*-1;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
