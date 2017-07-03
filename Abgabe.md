@@ -413,6 +413,7 @@ Sie nutzen an vielen Stellen Streams und Lambda-Expressions:
       * Commits
       * Sprint organisation (Issues die bis zum nächsten Termin erledigt werden sollen)
       * Priorisierung von Problematiken (Issues durch label organisiert) 
+      * Zuweisen von Aufgaben durch Teammitglieder
     
 
 
