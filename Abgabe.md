@@ -375,10 +375,12 @@ Die Realisation ist im Code zu finden unter: _Linkangabe_ (Zeile _von_-_bis_)
 
 > - Geben Sie an, ob Sie immutable Datenstrukturen verwenden
 
-Die Realisation der Immutabilität ist im Code gegeben durch
+Die Realisierung der Immutabilität ist im Code gegeben durch
 
 - [x] Nutzung des entsprechenden immutablen Interfaces der Spezifikation: _https://git.thm.de/dhzb87/p20/blob/master/InterfaceBoard.md#interface-streamboard zu p20-Repo_
-- [ ] Folgende Klasse implementiert das Interface: _Linkangabe zum Repo_, Zeilen _von_-_bis_
+- [ ] Folgende Klasse implementiert das Interface: 
+     * _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_ , Zeilen 18-_18_
+     * _https://git.thm.de/sskh68/Muehle/blob/master/T3/src/T3.java_ , Zeilen _17_-_17_
 - [x] Dadurch, dass alle Felder als `final` ausgewiesen sind
 - [x] Dadurch, dass alle Felder als `private` ausgewiesen sind 
 
