@@ -79,7 +79,6 @@ _Ihr Text_
 |     .  -  -  -  .  -  -  -  .     |
 |                 |                 |
 .  -  -  -  -  -  .  -  -  -  -  -  .
-
 [0: Computer move, ?: Help]
 Enter position to set stone: 
 
