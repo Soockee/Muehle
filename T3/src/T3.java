@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -114,24 +115,25 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .collect(Collectors.joining("\n"));
     }
 
-    /*
+    @Override
     public void save(T3 board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
+    @Override
     public void save(T3 board, Path path) throws IOException {
-        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory().stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(","))
-        );
-        if (board.isFlipped()) {
-            out.write(",f");
+        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            out.write(board.getHistory().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","))
+            );
+            if (board.isFlipped()) {
+                out.write(",f");
+            }
+            out.write("\n");
         }
-        out.write("\n");
-        out.close();
     }
-    */
+
     @Override
     public T3 load(String name) throws IOException {
         return load(Paths.get(name));

@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,6 +16,13 @@ import java.util.stream.Stream;
  */
 
 public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
+
+    private final int[] board;
+    private final int turn;
+    private final int movesWithoutRemoving; // used for detecting draws
+    private final Morris parent;
+    private final int phase;
+    private final boolean isFlipped;
 
     /******************************************************************
      * Fields:
@@ -67,14 +75,6 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
 
         }
     }
-
-
-    private final int[] board;
-    private final int turn;
-    private final int movesWithoutRemoving; // used for detecting draws
-    private final Morris parent;
-    private final int phase;
-    private final boolean isFlipped;
 
     Morris() {
         board = new int[24];
@@ -450,22 +450,24 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
         return new Morris(Arrays.copyOf(board, 24), turn, movesWithoutRemoving, parent, phase, !isFlipped);
     }
 
-    /*public void save(Morris board, String name) throws IOException {
+    @Override
+    public void save(Morris board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
+    @Override
     public void save(Morris board, Path path) throws IOException {
-        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory().stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(","))
-        );
-        if (board.isFlipped()) {
-            out.write(",f");
+        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            out.write(board.getHistory().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","))
+            );
+            if (board.isFlipped()) {
+                out.write(",f");
+            }
+            out.write("\n");
         }
-        out.write("\n");
-        out.close();
-    }*/
+    }
 
     @Override
     public Morris load(String name) throws IOException {
