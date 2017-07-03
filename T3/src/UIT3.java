@@ -161,7 +161,7 @@ public class UIT3 implements UIInterface{
                 resetGame();
             }
             res = 0;
-        } else if (in.matches(regex)) {
+        } else if (in.matches(regex) && board.streamMoves().anyMatch(k -> k == Integer.parseInt(in)-1)) {
             res = 1;
         }
         return res;
