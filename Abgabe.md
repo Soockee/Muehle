@@ -33,7 +33,7 @@ Die Team-Mitglieder sind:
 
 * _Krappatsch_, _Paul_: _paul.krappatsch@mni.thm.de_
 * _Stockhause_, _Simon_: _THM-Emailadresse_
-* _Franke_, _Björn_: _THM-Emailadresse_
+* _Franke_, _Björn_: _bjoern.franke@mni.thm.de_
 
 Die Beitragsanteile in Prozent verteilen sich wie folgt in unserem Team; die Summe der Prozentangaben ergibt 100% (oder 99% bei Drittelung).
 
@@ -77,26 +77,31 @@ Hier den Konsolen-Dialog reinkopieren.
 
 Unser Code zur Berechnung eines T3- bzw. eines Mühle-Zugs ist in der Tat identisch. Das sieht man im Code daran, dass ...
 
-_Ihr Text_
+_Die Klasse Ui, welche das User-Interface für Mühle realisiert, und die Klasse UIT3
+, welche das User-Interface für Tic-Tac-Toe realisiert, verwenden beide die Methode  evaluateBestBoard() der Klasse Ai.
+Weiterhin wäre es mit der Ai-Klasse möglich, für jede korrekte Implementierung des Stream-Board-Interface, einen Computerzug zu generieren._
 
 Beide Implementierungen nutzen für die folgenden Punkte den gleichen Code und
-- [ ] führen eine iterative Tiefensuche durch (2P)
-- [ ] und zwar als Alpha-Beta-Suche (2P),
-- [ ] eine Transpositionstabelle beschleunigt die Suche (2P)
-- [ ] die Suche bewertet eine Stellung jenseits des Suchhorizonts mit Hilfe der Monte-Carlo-Methode (2P)
-- [ ] die bis dahin beste gefundene Zugfolge wird mit jeder Iteration aktualisiert und kann bei Bedarf ausgegeben werden (2P)
+- [X] führen eine iterative Tiefensuche durch (2P)
+- [x] und zwar als Alpha-Beta-Suche (2P),
+- [x] eine Transpositionstabelle beschleunigt die Suche (2P)
+- [x] die Suche bewertet eine Stellung jenseits des Suchhorizonts mit Hilfe der Monte-Carlo-Methode (2P)
+- [x] die bis dahin beste gefundene Zugfolge wird mit jeder Iteration aktualisiert und kann bei Bedarf ausgegeben werden (2P)
 
 Die Implementierung für die Anforderungen finden sich für
 - die Tiefensuche (je nachdem, was Sie implementiert haben):
-  - Minimax/Negamax: _Linkangabe_ (Zeilen _von_-_bis_)
-  - Alpha-Beta:  _Linkangabe_ (Zeilen _von_-_bis_)
-  - iterative Suche:  _Linkangabe_ (Zeilen _von_-_bis_)
-- die Transpositionstabelle: _Linkangabe_ (Zeilen _von_-_bis_)
-- die Monte-Carlo-Methode: _Linkangabe_ (Zeilen _von_-_bis_)
+  - Minimax/Negamax: _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen _von 84_-_bis 137_)
+  - Alpha-Beta:  _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen_von 84_-_bis 137_)
+  - iterative Suche:  _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen _von 25_-_bis 81_)
+- die Transpositionstabelle: _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen _von 89 _-_bis 101_)_ (Zeilen _von 139_-_bis 147_)
+- die Monte-Carlo-Methode: _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen _von 149_-_bis 183_)
 
 Wir möchten folgende Anmerkungen zu unserem Code machen:
 
-_Ihr Text_
+_In der Klasse Ai gibt es zwei Methoden, die die Methode evaluateBestBoard aufrufen kann, um eine iterative Suche durchzuführen.
+Die Methode iterativeDepthSearch führt zunächst eine Tiefensuche durch und verwendet dabei eine Killer-Heuristik, die Methode
+altIterativeDepthSearch wiederum führt zwar diese auch aus, jedoch ohne Killer-Heuristik, dies ermöglicht aber die Tiefensuch parallel 
+ durchzuführen._
 
 ### Implementierung der Spielbrett- und Zuglogik (2P)
 
