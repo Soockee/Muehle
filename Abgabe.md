@@ -111,7 +111,16 @@ Die Implementierung für die Anforderungen finden sich für
 
 Wir möchten folgende Anmerkungen zu unserem Code machen:
 
-_Ihr Text_
+* Die Klasse CompletableFuture wurde in der UI benutzt
+    * Aufgaben wurden verketten Beispiel:
+        ```
+        CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(() -> {
+            // do something
+        });
+        CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) -> {
+            // do something
+        });
+        ```
 
 ### Implementierung der Spielbrett- und Zuglogik (2P)
 
