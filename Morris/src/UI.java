@@ -5,6 +5,8 @@
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -366,42 +368,49 @@ public class UI implements UIInterface {
 
         CompletableFuture<StreamBoard> cf1 = CompletableFuture.supplyAsync(() -> {
             System.out.print("Let me think about it...");
-            return ai.iterativeDepthSearch(board,1);
+            ai.evaluateBestBoard(board,1);
+            return ai.getBestMove();
         });
         CompletableFuture<StreamBoard> cf2 = cf1.thenComposeAsync((cf1Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tWhat if i do...");
-            comfut.complete(ai.iterativeDepthSearch(board,2));
+            ai.evaluateBestBoard(board,2);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf3 = cf2.thenComposeAsync((cf2Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tOr that...");
-            comfut.complete(ai.iterativeDepthSearch(board,3));
+            ai.evaluateBestBoard(board,3);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf4 = cf3.thenComposeAsync((cf3Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tThis seems quite good...");
-            comfut.complete(ai.iterativeDepthSearch(board,4));
+            ai.evaluateBestBoard(board,4);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf5 = cf4.thenComposeAsync((cf4Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tOh boy!...");
-            comfut.complete(ai.iterativeDepthSearch(board,5));
+            ai.evaluateBestBoard(board,5);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf6 = cf5.thenComposeAsync((cf5Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tI need to think this through...");
-            comfut.complete(ai.iterativeDepthSearch(board,6));
+            ai.evaluateBestBoard(board,6);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         CompletableFuture<StreamBoard> cf7 = cf6.thenComposeAsync((cf6Result) -> {
             CompletableFuture comfut = new CompletableFuture();
             System.out.print("\tThis is going to be a masterful move!");
-            comfut.complete(ai.iterativeDepthSearch(board,7));
+            ai.evaluateBestBoard(board,7);
+            comfut.complete(ai.getBestMove());
             return comfut;
         });
         while (!userInterupt.isDone() && !cf7.isDone()) {

@@ -1,6 +1,4 @@
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -29,12 +27,12 @@ public class Ai {
 
         IntStream
                 .range(0, depth)
-                .forEach(i -> bestMove = altIterativeDepthSearch(board, i));
+                .forEach(i -> bestMove = iterativeDepthSearch(board, i));
 
     }//evaluateBestBoard
 
 
-    public StreamBoard iterativeDepthSearch(StreamBoard<?> board, int depth) {
+    public StreamBoard<?> iterativeDepthSearch(StreamBoard<?> board, int depth) {
         List<StreamBoard<?>> list;
         ttable = new ConcurrentHashMap<>();
 
