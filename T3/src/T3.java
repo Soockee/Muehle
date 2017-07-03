@@ -54,14 +54,6 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return IntStream.range(0, 9).filter(i -> board[i] == 0);
     }
 
-    /*@Override
-    public List<Integer> getHistory() {
-        return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
-                .map(T3::getMove)
-                .map(Optional::get)
-                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-    }*/
-
     @Override
     public boolean isWin() {
         final int[][] rows = {
@@ -115,12 +107,13 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         char[] repr = isFlipped ? new char[]{'X', '.', 'O'} : new char[]{'O', '.', 'X'};
         return IntStream.range(0, 3) // rows
                 .mapToObj(row -> IntStream.rangeClosed(row * 3, row * 3 + 2)
-                        .map(n -> board[n])
-                        .map(n -> repr[n + 1])
-                        .mapToObj(n -> Character.toString((char) n))
+                        .map(pos -> board[pos])
+                        .map(playerSign -> repr[playerSign + 1])
+                        .mapToObj(playerSignInt -> Character.toString((char) playerSignInt))
                         .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
     }
+
     /*
     public void save(T3 board, String name) throws IOException {
         save(board, Paths.get(name));
@@ -170,18 +163,14 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 .collect(Collectors.toList())) {
             load = load.makeMove(pos.orElseThrow(() -> new IOException("File isn't in the expected standard")))
                     .orElseThrow(() -> new IOException("File contains invalid Moves"));
-            /*if (load.isValidMove(pos)) {
-                load = load.buildChild(pos).get();
-            } else throw new IOException("File contains invalid Moves");*/
         }
         return load;
     }
 
     private Optional<Integer> parseMove(String move) {
-        //if(move.length() > 1) return Optional.empty();
         try {
             int n = Integer.parseInt(move);
-            if(n < 0 || n > 8) return Optional.empty();
+            if (n < 0 || n > 8) return Optional.empty();
             return Optional.of(n);
         } catch (Exception e) {
             return Optional.empty();
@@ -208,10 +197,10 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 rotate(),
                 rotate().rotate(),
                 rotate().rotate().rotate(),
-                mirrorTopDown(),
-                rotate().mirrorTopDown(),
-                rotate().rotate().mirrorTopDown(),
-                rotate().rotate().rotate().mirrorTopDown()
+                mirrorVertically(),
+                rotate().mirrorVertically(),
+                rotate().rotate().mirrorVertically(),
+                rotate().rotate().rotate().mirrorVertically()
         );
     }
 
@@ -223,7 +212,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return new T3(newBoard, turn, parent, isFlipped);
     }
 
-    private T3 mirrorTopDown() {
+    private T3 mirrorVertically() {
         final int[] pattern = {
                 2, 1, 0, 5, 4, 3, 8, 7, 6
         };

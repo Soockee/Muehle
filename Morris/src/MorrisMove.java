@@ -11,31 +11,24 @@ import java.util.stream.Collectors;
  */
 public class MorrisMove {
 
-    private Integer from;
-    private int to;
-    private Integer remove;
+    private final Integer from;
+    private final int to;
+    private final Integer remove;
 
     public static Optional<MorrisMove> parseMove(String input, boolean isPhase1) {
-        Pattern p = Pattern.compile("\\s*(?:([01]\\d|2[0123]|\\d)\\s*-)?\\s*([01]\\d|2[0123]|\\d)\\s*(?:-\\s*([01]\\d|2[0123]|\\d))?\\s*", Pattern.COMMENTS);
+        Pattern p = Pattern.compile("\\s*(?:([01]\\d|2[0123]|\\d)\\s*-)?\\s*([01]\\d|2[0123]|\\d)\\s*(?:-\\s*([01]\\d|2[0123]|\\d))?\\s*");
         Matcher m = p.matcher(input);
         if (!m.matches()) {
             return Optional.empty();
         }
-        /*return Optional.of(isPhase1 ?
-                new MorrisMove(null,
-                        Integer.parseInt(m.group(2)),
-                        m.group(3) == null ? null : Integer.parseInt(m.group(3))) :
-                new MorrisMove(m.group(1) == null ? null : Integer.parseInt(m.group(1)),
-                        Integer.parseInt(m.group(2)),
-                        m.group(3) == null ? null : Integer.parseInt(m.group(3))));*/
         List<Integer> parts = Arrays.stream(input.split("-"))
                 .map(String::trim)
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
-        if(parts.size() > parts.stream().distinct().count()) return Optional.empty();
+        if (parts.size() > parts.stream().distinct().count()) return Optional.empty();
         switch (parts.size()) {
             case 3:
-                return isPhase1 ? Optional.empty() :  Optional.of(MorrisMove.moveOrJumpAndRemove(parts.get(0), parts.get(1), parts.get(2)));
+                return isPhase1 ? Optional.empty() : Optional.of(MorrisMove.moveOrJumpAndRemove(parts.get(0), parts.get(1), parts.get(2)));
             case 1:
                 return Optional.of(MorrisMove.place(parts.get(0)));
             default:
