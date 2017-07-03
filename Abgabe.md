@@ -156,7 +156,6 @@ So sieht der Programmdialog mit dem T3-Spiel aus:
 So sieht der Programmdialog mit dem Mühle-Spiel aus:
 
 * Hilfe Ausgabe Hier zu sehen ist das Kommando '?'
-
 ```
 Enter position to set stone: ?
 You can enter the following commands: 
@@ -202,8 +201,6 @@ Enter position to set stone:
 ```
 
 * Laden:laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
-
-
 ```
 [0: Computer move, ?: Help]
 Enter position to set stone: load
@@ -224,8 +221,6 @@ Enter Stone to move:
 ```
 
 * Zugphase: Spielstein in der Zugphase bewegen mit entfernen. Falscheingabe verusacht erneute Aufforderung erneuter Eingabe und zeigt mögliche Spielzüge an
-
-
 ```
 [0: Computer move, ?: Help]
 Enter Stone to move: 21
@@ -278,7 +273,6 @@ Enter Stone to move:
 ```
 
 * Speichern: Speichern einer Spielsittuation. Speicherpfad wird ausgegeben. Dateiname kann ausgewählt werden. --- //
-
 ```
 [0: Computer move, ?: Help]
 Enter Stone to move: save
@@ -287,7 +281,6 @@ Savefilepath: C:\Users\Simon\IdeaProjects\Muehle\example_save.txt
 ```
 
 * Ai Move: Standard Sätze, die angeben, wie weit fortgeschritten die Ai bei ihrer Berechnung ist. Berechnung kann abgebrochen werden.
-
 ```
 Enter Stone to move: 0
 Let me think about it...
@@ -306,13 +299,11 @@ O  -  O  -  O           X  -  O  -  O
 |     X  -  -  -  O  -  -  -  X     |
 |                 |                 |
 X  -  -  -  -  -  .  -  -  -  -  -  O
-
 [0: Computer move, ?: Help]
 Enter Stone to move: 
 ```
 
 * Endspielstand und Speicherabfrage
-
 ```
 O Won!
 Endgame: 
@@ -355,15 +346,12 @@ So sieht der Dateiinhalt eines gespeicherten T3-Spiels von unserem Programm aus:
 
 ```
 3,4,8,6,2,5,7,0,1
-
 ```
  
 So sieht der Dateiinhalt eines gespeicherten Mühle-Spiels von unserem Programm aus:
 
 ```
-
 02,12,05,15,06,13,11,22,18,21-02,02,19,17,14-05,09,08-11,16-19,04,09-01,13-05,02-03,21-20,03-11,20-19,01-00,19-20,06-07,05-13-11,17-09,13-21-07,09-17-04,15-23,00-01,21-13-01,18-10,13-21-10
-
 ```
 
 ## Bonuspunkte (15P)
