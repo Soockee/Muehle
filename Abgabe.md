@@ -60,12 +60,28 @@ _Ihr Text_
 
 * Das T3-Spiel wird in der Konsole folgt gestartet:
 ```
-Hier den Konsolen-Dialog reinkopieren.
+. . .
+. . .
+. . .
+[0: Computer move, ?: Help]
 ```
 
 * Das Mühle-Spiel wird in der Konsole wie folgt gestartet:
 ```
-Hier den Konsolen-Dialog reinkopieren.
+.  -  -  -  -  -  .  -  -  -  -  -  .
+|                 |                 |
+|     .  -  -  -  .  -  -  -  .     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+.  -  .  -  .           .  -  .  -  .
+|     |     .  -  .  -  .     |     |
+|     |           |           |     |
+|     .  -  -  -  .  -  -  -  .     |
+|                 |                 |
+.  -  -  -  -  -  .  -  -  -  -  -  .
+
+[0: Computer move, ?: Help]
+Enter position to set stone: 
 ```
 
 ### Der gemeinschaftliche Code zum Berechnen von Zügen (5x 2P)
@@ -77,7 +93,7 @@ Hier den Konsolen-Dialog reinkopieren.
 
 Unser Code zur Berechnung eines T3- bzw. eines Mühle-Zugs ist in der Tat identisch. Das sieht man im Code daran, dass ...
 
-_Ihr Text_
+wir die Klasse Ai sowohl für Morris, als auch für T3 verwenden. Somit benutzen wir den identischen Code für beide Klassen
 
 Beide Implementierungen nutzen für die folgenden Punkte den gleichen Code und
 - [ ] führen eine iterative Tiefensuche durch (2P)
@@ -120,11 +136,203 @@ _Ihr Text_
 
 Wir sind aus folgendem Grund abgewichen vom spezifizierten Dialogverhalten:
 
-_Ihr Text_
+Es wurden Erweiterungen eingebaut. Somit bleibt das Dialogverhalten nahe an dem, in der Vorlesung zu diesem Thema präsentierten, Dialogverhalten.
+
+Es wurde sich dazu entschlossen, nach einem Spielerzug keinen direkten Ai Move zu machen, da das ständige "undo" aufrufen den Spielfluss gestört hätte
+Somit ist eine Spieler vs. Spieler Situation direkt gegeben und auf Anfrage ein Computermove direkt machbar.
 
 So sieht der Programmdialog mit dem T3-Spiel aus:
+
+**Hilfe Ausgabe**
+
+Hier zu sehen ist das Kommando '?'
 ```
-Hier ca. 200 Zeilen des Konsolen-Dialogs reinkopieren.
+Enter position to set stone: ?
+
+You can enter the following commands: 
+<exit> : Exit the Application
+<save> : Saving the Game
+<0> : AI is making the Move for you
+<1-24>: Enter a number between 1 and 24 to make this move and follow the instructions afterwards
+<undo>: undo the last move
+<guide>: A Gameguide which helps you to understand how the game works
+<save>: saves the current game
+<load>: loads the file 'save.txt' in the current directory
+<flip>: flip causes to switch the symbols of the stones
+<new>: new game
+1  -  -  -  -  -  2  -  -  -  -  -  3
+|                 |                 |
+|     9  -  -  - 10  -  -  - 11     |
+|     |           |           |     |
+|     |    17  - 18  - 19     |     |
+8  - 16  - 24          20  - 12  -  4
+|     |    23  - 22  - 21     |     |
+|     |           |           |     |
+|    15  -  -  - 14  -  -  - 13     |
+|                 |                 |
+7  -  -  -  -  -  6  -  -  -  -  -  5
+
+```
+**Setzphase**
+
+Stein in der Setzphase setze
+```
+Enter position to set stone: 1
+
+X  -  -  -  -  -  .  -  -  -  -  -  .
+|                 |                 |
+|     .  -  -  -  .  -  -  -  .     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+.  -  .  -  .           .  -  .  -  .
+|     |     .  -  .  -  .     |     |
+|     |           |           |     |
+|     .  -  -  -  .  -  -  -  .     |
+|                 |                 |
+.  -  -  -  -  -  .  -  -  -  -  -  .
+
+[0: Computer move, ?: Help]
+Enter position to set stone: 
+```
+**Laden**
+
+laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
+```
+[0: Computer move, ?: Help]
+Enter position to set stone: load
+Please enter the file e.g. <save.txt>: moves_enabled.txt
+
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+O  -  O  -  .           .  -  O  -  O
+|     |     O  -  .  -  X     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+X  -  -  -  -  -  X  -  -  -  -  -  O
+
+[0: Computer move, ?: Help]
+Enter Stone to move: 
+
+```
+**Zugphase**
+
+Spielstein in der Zugphase bewegen mit entfernen. Falscheingabe verusacht erneute Aufforderung erneuter Eingabe und zeigt mögliche Spielzüge an
+```
+[0: Computer move, ?: Help]
+Enter Stone to move: 21
+Enter position to move stone: 20
+
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+O  -  O  -  .           X  -  O  -  O
+|     |     O  -  .  -  .     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+X  -  -  -  -  -  X  -  -  -  -  -  O
+
+[0: Computer move, ?: Help]
+Enter Stone to move: 22
+Enter position to move stone: 2
+Invalid move. Please try again
+Following moves are possible: 
+[10-18] [14-22] [16-24] [23-22] [23-24-01] [23-24-03] [23-24-06] [23-24-07] [23-24-09] [23-24-11] [23-24-13] [23-24-15] [23-24-20] 
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+O  -  O  -  .           X  -  O  -  O
+|     |     O  -  .  -  .     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+X  -  -  -  -  -  X  -  -  -  -  -  O
+
+[0: Computer move, ?: Help]
+Enter Stone to move: 23
+Enter position to move stone: 24
+Enter stone to remove: 7
+
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+O  -  O  -  O           X  -  O  -  O
+|     |     .  -  .  -  .     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+.  -  -  -  -  -  X  -  -  -  -  -  O
+
+[0: Computer move, ?: Help]
+Enter Stone to move: 
+
+```
+**Speichern**
+
+Speichern einer Spielsittuation. Speicherpfad wird ausgegeben. Dateiname kann ausgewählt werden. --- //
+```
+[0: Computer move, ?: Help]
+Enter Stone to move: save
+Please enter the file e.g. <save.txt>: example_save.txt
+Savefilepath: C:\Users\Simon\IdeaProjects\Muehle\example_save.txt
+```
+**Ai Move**
+
+Standard Sätze, die angeben, wie weit fortgeschritten die Ai bei ihrer Berechnung ist. Berechnung kann abgebrochen werden.
+```
+Enter Stone to move: 0
+Let me think about it...
+Enter any input to interrupt the search
+
+	What if i do...	Or that...	This seems quite good...	Oh boy!...	I need to think this through...	This is going to be a masterful move!  stopTESTTESTanyCommand
+I move from 5 to 6
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  .  -  .     |     |
+O  -  O  -  O           X  -  O  -  O
+|     |     .  -  .  -  .     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+X  -  -  -  -  -  .  -  -  -  -  -  O
+
+[0: Computer move, ?: Help]
+Enter Stone to move: 
+```
+**Endspielstand und Speicherabfrage**
+```
+O Won!
+Endgame: 
+
+X  -  -  -  -  -  O  -  -  -  -  -  X
+|                 |                 |
+|     X  -  -  -  O  -  -  -  X     |
+|     |           |           |     |
+|     |     .  -  O  -  .     |     |
+O  -  O  -  .           .  -  O  -  O
+|     |     .  -  .  -  .     |     |
+|     |           |           |     |
+|     X  -  -  -  O  -  -  -  X     |
+|                 |                 |
+X  -  -  -  -  -  O  -  -  -  -  -  X
+
+
+Do you want to save the game? type: <y> / <n>
+y
+Please enter the file e.g. <save.txt>: ex.txt
+Savefilepath: C:\Users\Simon\IdeaProjects\Muehle\ex.txt
 ```
 
 So sieht der Programmdialog mit dem Mühle-Spiel aus:
@@ -152,12 +360,12 @@ Wir können einen Spielstand gemäß [Spezifikation](https://git.thm.de/dhzb87/p
 
 So sieht der Dateiinhalt eines gespeicherten T3-Spiels von unserem Programm aus:
 ```
-Hier den Dateiinhalt reinkopieren!
+3,4,8,6,2,5,7,0,1
 ```
  
 So sieht der Dateiinhalt eines gespeicherten Mühle-Spiels von unserem Programm aus:
 ```
-Hier den Dateiinhalt reinkopieren!
+02,12,05,15,06,13,11,22,18,21-02,02,19,17,14-05,09,08-11,16-19,04,09-01,13-05,02-03,21-20,03-11,20-19,01-00,19-20,06-07,05-13-11,17-09,13-21-07,09-17-04,15-23,00-01,21-13-01,18-10,13-21-10
 ```
 
 ## Bonuspunkte (15P)
@@ -208,10 +416,15 @@ Sie nutzen an vielen Stellen Streams und Lambda-Expressions:
 
 ### Git-Meisterschaft (5P/Person)
 - [ ] Aus unserem Team haben sich die folgenden Mitglieder besonders bei der Erstellung, Korrektur und Stabilisierung der Spezifikationen im Git-Repository engagiert:
-  * keiner denke ich, wenn dann soll sich jeder selbst eintragen _P.K._
-  * _Nachname_: _Verweis/Link auf Emails, Issues, Merge-Requests, Erwähnung in Moodle-Unterlagen_
-  * _Nachname_: _Verweis/Link auf Emails, Issues, Merge-Requests, Erwähnung in Moodle-Unterlagen_
-  * _Nachname_: _Verweis/Link auf Emails, Issues, Merge-Requests, Erwähnung in Moodle-Unterlagen_
+  * Es wurde sich nicht direkt an der Entwicklung der Spezifikation beteiligt
+  * Wir konnten jedoch als Team viel von den Möglichkeiten, die Git uns zur Verfügung gestellt hat, im Rahmen unseres Projektes ausprobieren. Somit konnten wir einen gewissen Workflow für unser Team erschaffen, was uns half, das Projekt in gewünschter Zeit zu realisieren. Zu den gelernten Funktionen gehören: 
+    * Issue - Tracker
+    * Rollenverteilung (Master - Developer)
+    * Mergen von Branches
+    * Commits
+    * Sprint organisation (Issues die bis zum nächsten Termin erledigt werden sollen)
+    * Priorisierung von Problematiken (Issues durch label organisiert) 
+    
 
 
 
