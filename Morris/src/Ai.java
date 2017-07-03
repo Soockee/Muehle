@@ -22,7 +22,6 @@ public class Ai {
     }
 
     public void evaluateBestBoard(StreamBoard board, int depth) {
-        long start=System.currentTimeMillis();
         heuristic = null;
         IntStream
                 .range(0, depth)
@@ -68,6 +67,7 @@ public class Ai {
 
     public StreamBoard altIterativeDepthSearch(StreamBoard board, int depth) {
         StreamBoard bestBoard = null;
+        ttable=new ConcurrentHashMap<>();
         try {
             bestBoard = (StreamBoard) board
                     .children()
@@ -121,7 +121,7 @@ public class Ai {
         List<StreamBoard> listOfMoves = (List<StreamBoard>) board.children().collect(Collectors.toList());
         for (StreamBoard entry : listOfMoves) {
             board = entry;
-            int val = -alphaBeta(board, depth - 1, -beta, -alpha);
+            int val = -alphaBeta(board, depth - 1, -beta, -bestVal);
             board = board.parent();
             if (val > bestVal) {
                 bestVal = val;
@@ -161,15 +161,19 @@ public class Ai {
     }//playRandomly
 
     public int[] simulatePlays(StreamBoard board, int number) {
-        int[] dum =IntStream
+        return IntStream
                 .range(0, number)
                 .parallel()
                 .map(i -> playRandomly(board, board.isBeginnersTurn()))
-                .toArray();
-        int[] con = {0, 0,0};
-        con[2]= (int) Arrays.stream(dum).filter(i->i==1).count();
-        con[0]= (int) Arrays.stream(dum).filter(i->i==-1).count();
-        return con;
+                .collect(
+                        () -> new int[3],
+                        (int[] r, int i) -> r[i + 1] += 1,
+                        (int[] ints, int[] ints2) -> {
+                            ints[0] = ints2[0] = ints[0] + ints2[0];
+                            ints[1] = ints2[1] = ints[1] + ints2[1];
+                            ints[2] = ints2[2] = ints[2] + ints2[2];
+                        }
+                );
     }//simulatePlays
 
     public int evaluateBoard(StreamBoard board) {
