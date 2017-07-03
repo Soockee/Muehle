@@ -200,7 +200,7 @@ public class UIT3 implements UIInterface{
     @Override
     public StreamBoard getBestMove() {
         //pretty difficult AI: 200 montecarlo & searchdepth = 5
-        ai.evaluateBestBoard(board,5);
+        ai.evaluateBestBoard(board,2);
         StreamBoard b = ai.getBestMove();
         return b;
 

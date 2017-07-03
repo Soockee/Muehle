@@ -8,43 +8,87 @@ import java.util.stream.IntStream;
 
 /**
  * Created by xXThermalXx on 13.06.2017.
+ * Generiert die Computerzüge für die Implementierungen von Stream Board
  */
 public class Ai {
 
-    private ConcurrentHashMap<StreamBoard, TableEntry> ttable = new ConcurrentHashMap<>();
-    private StreamBoard bestMove=null;
+    private ConcurrentHashMap<StreamBoard<?>, TableEntry> ttable;
+    private TreeMap<Integer, List<StreamBoard<?>>> heuristic;
+    private StreamBoard<?> bestMove;
     private int playCount;
-    public Ai (int playCount){
+
+    public Ai(int playCount) {
         this.playCount = playCount;
+        ttable = new ConcurrentHashMap<>();
+        heuristic = null;
+        bestMove = null;
     }
-    public void evaluateBestBoard(StreamBoard board, int depth) {
+
+    public void evaluateBestBoard(StreamBoard<?> board, int depth) {
+        heuristic = null;
+
         IntStream
                 .range(0, depth)
-                .parallel()
-                .forEach(i -> {
-                    bestMove = iterativeDepthSearch(board,i);
-                });
+                .forEach(i -> bestMove = altIterativeDepthSearch(board, i));
+
     }//evaluateBestBoard
 
-    public StreamBoard iterativeDepthSearch(StreamBoard board, int depth)  {
-        StreamBoard bestBoard = null;
+
+    public StreamBoard iterativeDepthSearch(StreamBoard<?> board, int depth) {
+        List<StreamBoard<?>> list;
+        ttable = new ConcurrentHashMap<>();
+
+        if (heuristic == null) {
+            list =  board.children().collect(Collectors.toList());
+        } else {
+            list = getBoards(heuristic);
+        }
+        heuristic = new TreeMap<>();
+        for (StreamBoard elem : list) {
+            int val = -alphaBeta(elem, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+            List<StreamBoard<?>> con =  heuristic.get(val);
+            if (con == null) con = new ArrayList<>();
+            con.add(elem);
+
+            heuristic.put(val, con);
+        }//for
+
+        return heuristic.get(heuristic.lastKey()).get(0);
+    }//new iterativDepthSearch-Method
+
+    private ArrayList<StreamBoard<?>> getBoards(TreeMap<Integer, List<StreamBoard<?>>> map) {
+
+        ArrayList<StreamBoard<?>> list = new ArrayList<>();
+
+        for (Integer idx : map.keySet()) {
+            list.addAll(map.get(idx));
+        }
+
+        return list;
+    }
+
+    public StreamBoard altIterativeDepthSearch(StreamBoard<?> board, int depth) {
+        StreamBoard<?> bestBoard = null;
+        ttable = new ConcurrentHashMap<>();
         try {
-            bestBoard = (StreamBoard) board
+            bestBoard = board
                     .children()
-                    .max(Comparator.comparingInt(item -> -alphaBeta((StreamBoard) item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
+                    .max(Comparator.comparingInt(item -> -alphaBeta(item, depth, Integer.MIN_VALUE, Integer.MAX_VALUE)))
                     .orElseThrow(Error::new);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
         return bestBoard;
-    }//iterativeDepthSearch
+    }//old iterativDepthSearch-Method
 
-    public int alphaBeta(StreamBoard board, int depth, int alpha, int beta) {
+
+    private int alphaBeta(StreamBoard<?> board, int depth, int alpha, int beta) {
         int alphaStart = alpha;
 
 
         //wennn der Wert schon im hashTable vorliegt
-        TableEntry te = ttable.get(board.hashCode());
+        TableEntry te = ttable.get(board);
         if (te != null) {
             if (te.getFlag() == 0) {
                 return te.getValue();
@@ -62,22 +106,25 @@ public class Ai {
         //Evaluierung der Blätter,
         if (board.isWin()) {
             int val = -1000 + depth;
+            addToTable(board, val, alphaStart, beta);
             return val;
         }//Gewinnfall
         if (board.isDraw()) {
             int val = 0;
+            addToTable(board, val, alphaStart, beta);
             return val;
         }//Unentschieden
         if (depth == 0) {
             int val = evaluateBoard(board);
-            return val;
+            addToTable(board, val, alphaStart, beta);
+            return val * -1;
         }//gewünschte Tiefe wurde erreicht
 
         int bestVal = Integer.MIN_VALUE;
-        List<StreamBoard> listOfMoves = (List<StreamBoard>) board.children().collect(Collectors.toList());
-        for (StreamBoard entry : listOfMoves) {
+        List<StreamBoard<?>> listOfMoves =  board.children().collect(Collectors.toList());
+        for (StreamBoard<?> entry : listOfMoves) {
             board = entry;
-            int val = -alphaBeta(board, depth - 1, -beta, -alpha);
+            int val = -alphaBeta(board, depth - 1, -beta, -bestVal);
             board = board.parent();
             if (val > bestVal) {
                 bestVal = val;
@@ -86,7 +133,12 @@ public class Ai {
             if (alpha >= beta) break;
         }//for
 
+        addToTable(board, bestVal, alphaStart, beta);
 
+        return bestVal;
+    }//alphaBeta
+
+    private void addToTable(StreamBoard<?> board, int bestVal, int alphaStart, int beta) {
         if (bestVal <= alphaStart) {
             ttable.put(board, new TableEntry(bestVal, 2));
         } else if (bestVal >= beta) {
@@ -94,17 +146,15 @@ public class Ai {
         } else {
             ttable.put(board, new TableEntry(bestVal, 0));
         }
+    }
 
-        return bestVal;
-    }//alphaBeta
-
-    public int playRandomly(StreamBoard board, boolean turn) {
+    private int playRandomly(StreamBoard<?> board, boolean turn) {
         if (board.isWin()) {
             return (board.isBeginnersTurn() == turn) ? 1 : -1;
         }
         Random r = ThreadLocalRandom.current();
         while (!board.isDraw()) {
-            List<StreamBoard> container = (List<StreamBoard>) board.children().collect(Collectors.toList());
+            List<StreamBoard<?>> container = board.children().collect(Collectors.toList());
             board = container.get(r.nextInt(container.size()));
             if (board.isWin()) {
                 return (board.isBeginnersTurn() == turn) ? 1 : -1;
@@ -113,7 +163,7 @@ public class Ai {
         return 0;
     }//playRandomly
 
-    public int[] simulatePlays(StreamBoard board, int number) {
+    private int[] simulatePlays(StreamBoard<?> board, int number) {
         return IntStream
                 .range(0, number)
                 .parallel()
@@ -129,12 +179,12 @@ public class Ai {
                 );
     }//simulatePlays
 
-    public int evaluateBoard(StreamBoard board) {
+    private int evaluateBoard(StreamBoard<?> board) {
         int[] val = simulatePlays(board, playCount);
         return val[2] - val[0];
     }//evaluateBoard
 
-    public StreamBoard getBestMove(){
+    public StreamBoard<?> getBestMove() {
         return bestMove;
     }
 }//class
