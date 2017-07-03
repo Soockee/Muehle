@@ -142,6 +142,7 @@ Es wurde sich dazu entschlossen, nach einem Spielerzug keinen direkten Ai Move z
 Somit ist eine Spieler vs. Spieler Situation direkt gegeben und auf Anfrage ein Computermove direkt machbar.
 
 So sieht der Programmdialog mit dem T3-Spiel aus:
+
 ```
 fill
 ```
@@ -149,9 +150,7 @@ fill
 
 So sieht der Programmdialog mit dem Mühle-Spiel aus:
 
-**Hilfe Ausgabe**
-
-Hier zu sehen ist das Kommando '?'
+* Hilfe Ausgabe Hier zu sehen ist das Kommando '?'
 ```
 Enter position to set stone: ?
 
@@ -179,9 +178,7 @@ You can enter the following commands:
 7  -  -  -  -  -  6  -  -  -  -  -  5
 
 ```
-**Setzphase**
-
-Stein in der Setzphase setze
+* Setzphase: Stein in der Setzphase setze
 ```
 Enter position to set stone: 1
 
@@ -200,9 +197,7 @@ X  -  -  -  -  -  .  -  -  -  -  -  .
 [0: Computer move, ?: Help]
 Enter position to set stone: 
 ```
-**Laden**
-
-laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
+* Laden: laden einer Spieldatei, mit dazugehöriger Abfrage der Datei
 ```
 [0: Computer move, ?: Help]
 Enter position to set stone: load
@@ -224,9 +219,7 @@ X  -  -  -  -  -  X  -  -  -  -  -  O
 Enter Stone to move: 
 
 ```
-**Zugphase**
-
-Spielstein in der Zugphase bewegen mit entfernen. Falscheingabe verusacht erneute Aufforderung erneuter Eingabe und zeigt mögliche Spielzüge an
+* Zugphase: Spielstein in der Zugphase bewegen mit entfernen. Falscheingabe verusacht erneute Aufforderung erneuter Eingabe und zeigt mögliche Spielzüge an
 ```
 [0: Computer move, ?: Help]
 Enter Stone to move: 21
@@ -283,18 +276,14 @@ O  -  O  -  O           X  -  O  -  O
 Enter Stone to move: 
 
 ```
-**Speichern**
-
-Speichern einer Spielsittuation. Speicherpfad wird ausgegeben. Dateiname kann ausgewählt werden. --- //
+* Speichern: Speichern einer Spielsittuation. Speicherpfad wird ausgegeben. Dateiname kann ausgewählt werden. --- //
 ```
 [0: Computer move, ?: Help]
 Enter Stone to move: save
 Please enter the file e.g. <save.txt>: example_save.txt
 Savefilepath: C:\Users\Simon\IdeaProjects\Muehle\example_save.txt
 ```
-**Ai Move**
-
-Standard Sätze, die angeben, wie weit fortgeschritten die Ai bei ihrer Berechnung ist. Berechnung kann abgebrochen werden.
+* Ai Move: Standard Sätze, die angeben, wie weit fortgeschritten die Ai bei ihrer Berechnung ist. Berechnung kann abgebrochen werden.
 ```
 Enter Stone to move: 0
 Let me think about it...
@@ -317,7 +306,7 @@ X  -  -  -  -  -  .  -  -  -  -  -  O
 [0: Computer move, ?: Help]
 Enter Stone to move: 
 ```
-**Endspielstand und Speicherabfrage**
+* Endspielstand und Speicherabfrage
 ```
 O Won!
 Endgame: 
