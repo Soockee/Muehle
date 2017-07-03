@@ -82,6 +82,7 @@ _Ihr Text_
 
 [0: Computer move, ?: Help]
 Enter position to set stone: 
+
 ```
 
 ### Der gemeinschaftliche Code zum Berechnen von Zügen (5x 2P)
