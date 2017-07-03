@@ -142,6 +142,12 @@ Es wurde sich dazu entschlossen, nach einem Spielerzug keinen direkten Ai Move z
 Somit ist eine Spieler vs. Spieler Situation direkt gegeben und auf Anfrage ein Computermove direkt machbar.
 
 So sieht der Programmdialog mit dem T3-Spiel aus:
+```
+fill
+```
+
+
+So sieht der Programmdialog mit dem Mühle-Spiel aus:
 
 **Hilfe Ausgabe**
 
@@ -335,11 +341,6 @@ Please enter the file e.g. <save.txt>: ex.txt
 Savefilepath: C:\Users\Simon\IdeaProjects\Muehle\ex.txt
 ```
 
-So sieht der Programmdialog mit dem Mühle-Spiel aus:
-```
-Hier ca. 200 Zeilen des Konsolen-Dialogs reinkopieren.
-```
-
 ### Das Laden und Speichern von Spielen (2x 2P)
 
 > - Geben Sie an, ob Ihr Programm Spiele speichern kann
@@ -359,13 +360,18 @@ Wir können einen Spielstand gemäß [Spezifikation](https://git.thm.de/dhzb87/p
  
 
 So sieht der Dateiinhalt eines gespeicherten T3-Spiels von unserem Programm aus:
+
 ```
 3,4,8,6,2,5,7,0,1
+
 ```
  
 So sieht der Dateiinhalt eines gespeicherten Mühle-Spiels von unserem Programm aus:
+
 ```
+
 02,12,05,15,06,13,11,22,18,21-02,02,19,17,14-05,09,08-11,16-19,04,09-01,13-05,02-03,21-20,03-11,20-19,01-00,19-20,06-07,05-13-11,17-09,13-21-07,09-17-04,15-23,00-01,21-13-01,18-10,13-21-10
+
 ```
 
 ## Bonuspunkte (15P)
