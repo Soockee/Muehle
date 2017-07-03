@@ -9,24 +9,26 @@ import java.util.stream.Stream;
 
 public interface StreamBoard<Move> extends SaveableBoard<Move> {
 
+    @SuppressWarnings("unchecked")
     default Optional<? extends StreamBoard<Move>> makeMove(Move move) {// may be changed to Optional later
         return children()
-                .filter(board -> board.getMove().equals(move))
+                .filter(board -> board.getMove().equals(move)) // sollte board.getMove().get().equals(move) sein
                 .findAny();
     }
 
+    @SuppressWarnings("unchecked")
     default Optional<? extends StreamBoard<Move>> makeMove(Move... moves) {
         Optional<? extends StreamBoard<Move>> res = Optional.of(this);
         for (Move move : moves) {
             if (!res.isPresent()) return Optional.empty();
-            else res = res.get().makeMove(move);
+            res = res.get().makeMove(move);
         }
         return res;
     }
 
     default List<Move> getHistory() {
-        return Stream.iterate(this, board -> board.parent() != null,StreamBoard::parent)
-                .sequential()
+        return Stream.iterate(this, board -> board.parent() != null, StreamBoard::parent)
+                .sequential() //?
                 .map(StreamBoard::getMove)
                 .map(Optional::get)
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
@@ -34,7 +36,7 @@ public interface StreamBoard<Move> extends SaveableBoard<Move> {
 
     Optional<Move> getMove();//returns Move from parentBoard to this instance
 
-    StreamBoard<Move> parent(); // returns parent board, one Move behind
+    StreamBoard<Move> parent(); // returns parent board; one Move behind
 
     Stream<? extends StreamBoard<Move>> children(); //target boards
 

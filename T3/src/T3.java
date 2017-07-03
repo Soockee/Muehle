@@ -1,4 +1,3 @@
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -56,24 +54,6 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     IntStream streamMoves() {
         return IntStream.range(0, 9).filter(i -> board[i] == 0);
     }
-
-    @Override
-    public List<Integer> getHistory() {
-        return Stream.iterate(this, t3 -> t3.parent != null, t3 -> t3.parent)
-                .map(T3::getMove)
-                .map(Optional::get)
-                .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
-    }
-
-    /*@Override
-    public List<Integer> history() {
-        return Stream.iterate(this, board ->  board.parent() != null, t3 -> (T3) t3.parent())
-                .map(StreamBoard::getMove)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }//ordered from beginning to most recent Move
-
-   */
 
     @Override
     public boolean isWin() {
@@ -128,28 +108,30 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         char[] repr = isFlipped ? new char[]{'X', '.', 'O'} : new char[]{'O', '.', 'X'};
         return IntStream.range(0, 3) // rows
                 .mapToObj(row -> IntStream.rangeClosed(row * 3, row * 3 + 2)
-                        .map(n -> board[n])
-                        .map(n -> repr[n + 1])
-                        .mapToObj(n -> Character.toString((char) n))
+                        .map(pos -> board[pos])
+                        .map(playerSign -> repr[playerSign + 1])
+                        .mapToObj(playerSignInt -> Character.toString((char) playerSignInt))
                         .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
     }
 
+    @Override
     public void save(T3 board, String name) throws IOException {
         save(board, Paths.get(name));
     }
 
+    @Override
     public void save(T3 board, Path path) throws IOException {
-        BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
-        out.write(board.getHistory().stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(","))
-        );
-        if (board.isFlipped()) {
-            out.write(",f");
+        try (BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            out.write(board.getHistory().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","))
+            );
+            if (board.isFlipped()) {
+                out.write(",f");
+            }
+            out.write("\n");
         }
-        out.write("\n");
-        out.close();
     }
 
     @Override
@@ -165,29 +147,36 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
     @Override
     public T3 load(Path path) throws IOException {
         T3 load = new T3();
-        LinkedList<String> moves = Files.lines(path, StandardCharsets.UTF_8)
-                .map(s -> s.split(","))
-                .flatMap(Arrays::stream)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toCollection(LinkedList::new));
+        LinkedList<String> moves;
+        try (Stream<String> lines = Files.lines(path, StandardCharsets.UTF_8)) {
+            moves = lines
+                    .map(s -> s.split(","))
+                    .flatMap(Arrays::stream)
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toCollection(LinkedList::new));
+        }
         if (moves.getLast().toLowerCase().equals("f")) {
             moves.removeLast();
             load = (T3) load.flip();
         }
-        for (Integer pos : moves.stream()
-                .map(Integer::parseInt)
+        for (Optional<Integer> pos : moves.stream()
+                .map(this::parseMove)
                 .collect(Collectors.toList())) {
-            load = load.makeMove(pos).orElseThrow(() -> new IOException("File contains invalid Moves"));
-            /*if (load.isValidMove(pos)) {
-                load = load.buildChild(pos).get();
-            } else throw new IOException("File contains invalid Moves");*/
+            load = load.makeMove(pos.orElseThrow(() -> new IOException("File isn't in the expected standard")))
+                    .orElseThrow(() -> new IOException("File contains invalid Moves"));
         }
         return load;
     }
 
-    private boolean isValidMove(Integer pos) {
-        return streamMoves().anyMatch(move -> move == pos);
+    private Optional<Integer> parseMove(String move) {
+        try {
+            int n = Integer.parseInt(move);
+            if (n < 0 || n > 8) return Optional.empty();
+            return Optional.of(n);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -210,10 +199,10 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
                 rotate(),
                 rotate().rotate(),
                 rotate().rotate().rotate(),
-                mirrorTopDown(),
-                rotate().mirrorTopDown(),
-                rotate().rotate().mirrorTopDown(),
-                rotate().rotate().rotate().mirrorTopDown()
+                mirrorVertically(),
+                rotate().mirrorVertically(),
+                rotate().rotate().mirrorVertically(),
+                rotate().rotate().rotate().mirrorVertically()
         );
     }
 
@@ -225,7 +214,7 @@ public class T3 implements StreamBoard<Integer>, SaveableGame<T3> {
         return new T3(newBoard, turn, parent, isFlipped);
     }
 
-    private T3 mirrorTopDown() {
+    private T3 mirrorVertically() {
         final int[] pattern = {
                 2, 1, 0, 5, 4, 3, 8, 7, 6
         };

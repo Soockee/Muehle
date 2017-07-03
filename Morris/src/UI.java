@@ -3,9 +3,9 @@
  * Last edit: 29.06.2017
  ************************************************************/
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 

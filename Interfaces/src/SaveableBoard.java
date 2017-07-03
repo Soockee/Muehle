@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface SaveableBoard<Move> {
     List<Move> getHistory(); // last move in list = recent move
+
     boolean isFlipped();
 }
 
