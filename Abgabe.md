@@ -24,10 +24,10 @@ An einigen Stellen müssen Sie in diesem Dokument eine Referenz zur P20-Dokument
 
 Wir haben das Praktikum bei
 
-* _Herrn Herzberg__ besucht
+* _Herrn Herzberg_ besucht
 * im _4._ Block
 
-Das Team-Repository auf GitLab: _Link einfügen_
+Das Team-Repository auf GitLab: _https://git.thm.de/sskh68/Muehle_
 
 Die Team-Mitglieder sind:
 
