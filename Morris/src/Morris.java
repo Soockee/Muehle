@@ -398,7 +398,7 @@ public class Morris implements SaveableGame<Morris>, StreamBoard<MorrisMove> {
                 {-3, -2, -2, -2, -2, -2, -3, -2, -2, -2, -2, -2, -3},
                 {6, -4, -4, -4, -4, -4, 5, -4, -4, -4, -4, -4, 4}
         };
-        char[] repr = isFlipped ? new char[]{'X', '.', 'O', '-', '|', ' '} : new char[]{'O', '.', 'X', '-', '|', ' '};
+        final char[] repr = isFlipped ? new char[]{'X', '.', 'O', '-', '|', ' '} : new char[]{'O', '.', 'X', '-', '|', ' '};
         return IntStream.rangeClosed(0, 10).mapToObj(row -> Arrays.stream(display[row])
                 .map(n -> (n < 0) ? n + 6 : board[n])
                 .map(n -> repr[n + 1])
