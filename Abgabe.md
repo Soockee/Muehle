@@ -78,8 +78,9 @@ Hier den Konsolen-Dialog reinkopieren.
 Unser Code zur Berechnung eines T3- bzw. eines Mühle-Zugs ist in der Tat identisch. Das sieht man im Code daran, dass ...
 
 _Die Klasse Ui, welche das User-Interface für Mühle realisiert, und die Klasse UIT3
-, welche das User-Interface für Tic-Tac-Toe realisiert, verwenden beide die Methode  evaluateBestBoard() der Klasse Ai.
-Weiterhin wäre es mit der Ai-Klasse möglich, für jede korrekte Implementierung des Stream-Board-Interface, einen Computerzug zu generieren._
+, welche das User-Interface für Tic-Tac-Toe realisiert, verwenden beide die Methode  evaluateBestBoard der Klasse Ai, um 
+einen Computer-Spielzug zu generieren.
+Weiterhin wäre es mit der Ai-Klasse möglich, für jede korrekte Implementierung des Stream-Board-Interface, einen Computer-Spielzug zu generieren._
 
 Beide Implementierungen nutzen für die folgenden Punkte den gleichen Code und
 - [X] führen eine iterative Tiefensuche durch (2P)
@@ -178,8 +179,7 @@ Sie können für die Umsetzung eines der beiden folgenden Punkte 5 Bonuspunkte e
 - [x] Die Implementierung der Transpositionstabelle für Mühle nutzt Symmetrien der "Spielmechanik" aus, um symmetrische Stellungen zu erkennen
 - [ ] Die Implementierung setzt Bitboards für Mühle um
 
-Die Realisation ist im Code zu finden unter: _Linkangabe_ (Zeile _von_-_bis_)
-
+Die Realisation ist im Code zu finden unter:  _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeilen _von 89 _-_bis 101_)_ (Zeilen _von 139_-_bis 147_)
 ### Immutabilität und Streams mit Lambdas (2x 5P)
 
 #### Immutabilität (5P)
