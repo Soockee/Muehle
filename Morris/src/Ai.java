@@ -30,7 +30,7 @@ public class Ai {
                 .forEach(i -> {
                     bestMove = iterativeDepthSearch(board, i);
                     //Die folgende Zeile muss entkommentiert werden, um sich die erechneten Zwischenergebnise auszugeben.
-                    System.out.println("\nBester Zug in Tiefe "+(i+1)+": "+bestMove.getMove().get().toString()+"\n");
+                    //System.out.println("\nBester Zug in Tiefe "+(i+1)+": "+bestMove.getMove().get().toString()+"\n");
                 });
 
     }//evaluateBestBoard
