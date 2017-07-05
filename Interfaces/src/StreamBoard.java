@@ -30,7 +30,7 @@ public interface StreamBoard<Move> extends SaveableBoard<Move> {
         return Stream.iterate(this, board -> board.parent() != null, StreamBoard::parent)
                 .sequential() //?
                 .map(StreamBoard::getMove)
-                .map(Optional::get)
+                .map(Optional::get) // always a value present, since Boards without a parent can´t be in the Stream => predicate
                 .collect(LinkedList::new, LinkedList::addFirst, LinkedList::addAll);
     }
 

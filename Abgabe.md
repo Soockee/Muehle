@@ -24,10 +24,10 @@ An einigen Stellen müssen Sie in diesem Dokument eine Referenz zur P20-Dokument
 
 Wir haben das Praktikum bei
 
-* _Herr Herzberg_ besucht
+* _Herrn Herzberg_ besucht
 * im _4._ Block
 
-Das Team-Repository auf GitLab: _Link einfügen_
+Das Team-Repository auf GitLab: _https://git.thm.de/sskh68/Muehle_
 
 Die Team-Mitglieder sind:
 
@@ -147,7 +147,7 @@ Folgende Interfaces haben wir implementiert:
 
 Wir möchten folgende Anmerkungen zu unserem Code machen:
 
-_Ihr Text_
+_Mein Text_
 
 ### Der Programmdialog (2x 2P)
 
@@ -376,7 +376,7 @@ Sie können für die Umsetzung eines der beiden folgenden Punkte 5 Bonuspunkte e
 - [x] Die Implementierung der Transpositionstabelle für Mühle nutzt Symmetrien der "Spielmechanik" aus, um symmetrische Stellungen zu erkennen
 - [ ] Die Implementierung setzt Bitboards für Mühle um
 
-Die Realisation ist im Code zu finden unter: _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_ (Zeile _von 89_-_bis 101_) (Zeile _von 139_-_bis 147_)
+Die Realisation ist im Code zu finden unter: _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_ (Zeile _503_-_564_)(transposed Boards are equal), https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_(implementieung in der Ai-Klasse als ttable)
 
 ### Immutabilität und Streams mit Lambdas (2x 5P)
 
@@ -387,7 +387,7 @@ Die Realisation ist im Code zu finden unter: _https://git.thm.de/sskh68/Muehle/b
 Die Realisierung der Immutabilität ist im Code gegeben durch
 
 - [x] Nutzung des entsprechenden immutablen Interfaces der Spezifikation: _https://git.thm.de/dhzb87/p20/blob/master/InterfaceBoard.md#interface-streamboard zu p20-Repo_
-- [ ] Folgende Klasse implementiert das Interface: 
+- [x] Folgende Klasse implementiert das Interface: 
      * _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_ , Zeilen 18-_18_
      * _https://git.thm.de/sskh68/Muehle/blob/master/T3/src/T3.java_ , Zeilen _17_-_17_
 - [x] Dadurch, dass alle Felder als `final` ausgewiesen sind
@@ -401,29 +401,17 @@ Die Realisierung der Immutabilität ist im Code gegeben durch
 
 Sie nutzen an vielen Stellen Streams und Lambda-Expressions:
 
-- [x] Wir implementieren das `StreamBoard`: _https://git.thm.de/dhzb87/p20/blob/master/InterfaceBoard.md#interface-streamboard_
-- [ ] An folgenden Stellen im Code kommen Streams zum Einsatz:
+- [x] Wir implementieren das `StreamBoard`: https://git.thm.de/dhzb87/p20/blob/master/InterfaceBoard.md#interface-streamboard
+- [x] An folgenden Stellen im Code kommen Streams zum Einsatz:
   - Streams und Labmda-Ausdrücke kommen im Code sehr häufig vor. Beispielhaft folgendes: 
-  - _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_, Zeilen: _174_-_180_
+  - _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_, Zeilen: _174_-_180; 191 - 226; 252 - 335_
   - _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/UI.java_, Zeilen: _113
   
-- [ ] An folgenden Stellen im Code kommen Lambda-Ausdrücke zum Einsatz
+- [x] An folgenden Stellen im Code kommen Lambda-Ausdrücke zum Einsatz
   - _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/UI.java_, Zeilen: _363_ - _414_,
   - _https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Ai.java_, Zeilen: _170_ - _178_
+  https://git.thm.de/sskh68/Muehle/blob/master/Morris/src/Morris.java_, Zeilen: _198 - 205, 218 - 221, 223 - 225, 234,244,247..._
   - _Linkangabe zur Datei_, Zeilen: _ZeileX_, _ZeileY_, _ZeileZ_, ...
 
 ### Git-Meisterschaft (5P/Person)
 - [ ] Aus unserem Team haben sich die folgenden Mitglieder besonders bei der Erstellung, Korrektur und Stabilisierung der Spezifikationen im Git-Repository engagiert:
-  * Es wurde sich nicht direkt an der Entwicklung der Spezifikation beteiligt
-  * Wir konnten jedoch als Team viel von den Möglichkeiten, die Git uns zur Verfügung gestellt hat, im Rahmen unseres Projektes ausprobieren. Somit konnten wir einen gewissen Workflow für unser Team erschaffen, was uns half, das Projekt in gewünschter Zeit zu realisieren. Zu den gelernten Funktionen gehören: 
-      * Issue - Tracker
-      * Rollenverteilung (Master - Developer)
-      * Mergen von Branches
-      * Commits
-      * Sprint organisation (Issues die bis zum nächsten Termin erledigt werden sollen)
-      * Priorisierung von Problematiken (Issues durch label organisiert) 
-      * Zuweisen von Aufgaben durch Teammitglieder
-    
-
-
-
