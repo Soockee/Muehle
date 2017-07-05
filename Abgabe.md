@@ -415,16 +415,3 @@ Sie nutzen an vielen Stellen Streams und Lambda-Expressions:
 
 ### Git-Meisterschaft (5P/Person)
 - [ ] Aus unserem Team haben sich die folgenden Mitglieder besonders bei der Erstellung, Korrektur und Stabilisierung der Spezifikationen im Git-Repository engagiert:
-  * Es wurde sich nicht direkt an der Entwicklung der Spezifikation beteiligt
-  * Wir konnten jedoch als Team viel von den Möglichkeiten, die Git uns zur Verfügung gestellt hat, im Rahmen unseres Projektes ausprobieren. Somit konnten wir einen gewissen Workflow für unser Team erschaffen, was uns half, das Projekt in gewünschter Zeit zu realisieren. Zu den gelernten Funktionen gehören: 
-      * Issue - Tracker
-      * Rollenverteilung (Master - Developer)
-      * Mergen von Branches
-      * Commits
-      * Sprint organisation (Issues die bis zum nächsten Termin erledigt werden sollen)
-      * Priorisierung von Problematiken (Issues durch label organisiert) 
-      * Zuweisen von Aufgaben durch Teammitglieder
-    
-
-
-
