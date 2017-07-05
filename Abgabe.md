@@ -32,7 +32,7 @@ Das Team-Repository auf GitLab: _Link einfügen_
 Die Team-Mitglieder sind:
 
 * _Krappatsch_, _Paul_: _paul.krappatsch@mni.thm.de_
-* _Stockhause_, _Simon_: _THM-Emailadresse_
+* _Stockhause_, _Simon_: _simon.stockhause@mni.thm.de
 * _Franke_, _Björn_: _bjoern.franke@mni.thm.de_
 
 Die Beitragsanteile in Prozent verteilen sich wie folgt in unserem Team; die Summe der Prozentangaben ergibt 100% (oder 99% bei Drittelung).
